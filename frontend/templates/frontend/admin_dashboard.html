@@ -1,0 +1,369 @@
+{% extends 'frontend/base.html' %}
+
+{% block title %}Central Admin Dashboard | Civic Issue Portal{% endblock %}
+
+{% block content %}
+<style>
+    .tab-btn {
+        padding: 0.8rem 1.5rem;
+        background: transparent;
+        color: var(--text-muted);
+        border: none;
+        border-bottom: 2px solid transparent;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        font-size: 1.05rem;
+    }
+    .tab-btn:hover {
+        color: white;
+    }
+    .tab-btn.active {
+        color: var(--primary-light);
+        border-bottom: 2px solid var(--primary);
+    }
+    .tab-content {
+        display: none;
+        animation: fadeIn 0.4s ease forwards;
+    }
+    .tab-content.active {
+        display: block;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(5px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+    <h2>Central Governance Interface</h2>
+    <span style="color: var(--danger); font-weight: 800; border: 1px solid var(--danger); padding: 0.3rem 0.8rem; border-radius: 99px; font-size: 0.85rem;">System Administrator</span>
+</div>
+
+<!-- Tabs Navbar -->
+<div style="display: flex; gap: 0.5rem; border-bottom: 1px solid var(--border); margin-bottom: 2rem;">
+    <button class="tab-btn active" onclick="switchTab('overview', this)">System Overview</button>
+    <button class="tab-btn" onclick="switchTab('wards', this)">Wards & Officials</button>
+    <button class="tab-btn" onclick="switchTab('departments', this)">Departments</button>
+</div>
+
+<!-- TAB 1: OVERVIEW -->
+<div id="tab-overview" class="tab-content active">
+    <!-- Stats -->
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
+        <div class="glass-card" style="text-align: center; padding: 1.5rem;">
+            <h3 style="color: var(--text-muted); font-size: 1rem;">Total Issues</h3>
+            <p id="stat-total" style="font-size: 2.5rem; font-weight: 800; color: white;">0</p>
+        </div>
+        <div class="glass-card" style="text-align: center; padding: 1.5rem;">
+            <h3 style="color: var(--warning); font-size: 1rem;">Pending / Progress</h3>
+            <p id="stat-pending" style="font-size: 2.5rem; font-weight: 800; color: var(--warning);">0</p>
+        </div>
+        <div class="glass-card" style="text-align: center; padding: 1.5rem;">
+            <h3 style="color: var(--danger); font-size: 1rem;">Escalated Tickets</h3>
+            <p id="stat-escalated" style="font-size: 2.5rem; font-weight: 800; color: var(--danger);">0</p>
+        </div>
+    </div>
+
+    <!-- Tickets Table -->
+    <div class="glass-card" style="margin-bottom: 2rem;">
+        <h3 style="margin-bottom: 1rem;">All System Tickets</h3>
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <th style="padding: 1rem; color: var(--text-muted);">ID</th>
+                        <th style="padding: 1rem; color: var(--text-muted);">Citizen</th>
+                        <th style="padding: 1rem; color: var(--text-muted);">Category</th>
+                        <th style="padding: 1rem; color: var(--text-muted);">Status</th>
+                        <th style="padding: 1rem; color: var(--text-muted);">Priority</th>
+                        <th style="padding: 1rem; color: var(--text-muted);">Image</th>
+                        <th style="padding: 1rem; color: var(--text-muted);">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-complaints">
+                    <tr><td colspan="6" style="text-align:center; padding: 2rem;">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<!-- TAB 2: WARDS -->
+<div id="tab-wards" class="tab-content">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+        <!-- Wards List -->
+        <div class="glass-card">
+            <h3 style="margin-bottom: 1rem;">Active Wards</h3>
+            <ul id="wards-list" style="list-style: none; display: flex; flex-direction: column; gap: 0.5rem;">
+                <li style="color: var(--text-muted);">Loading...</li>
+            </ul>
+            
+            <div id="new-ward-form" style="margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+                <h4>Add New Ward</h4>
+                <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                    <input type="text" id="new-ward-name" class="form-control" placeholder="Ward Name">
+                    <button class="btn btn-primary" onclick="createWard()">Create</button>
+                </div>
+            </div>
+
+            <div id="reg-ward-member-form" style="margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+                <h4>Register Ward Member</h4>
+                <p style="color:var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">Assign an official to manage a specific ward.</p>
+                <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+                    <input type="text" id="wm-username" class="form-control" placeholder="Username" required>
+                    <input type="text" id="wm-fullname" class="form-control" placeholder="Full Name" required>
+                    <input type="email" id="wm-email" class="form-control" placeholder="Email Address">
+                    <input type="text" id="wm-phone" class="form-control" placeholder="Phone Number (10 digits)" maxlength="10" required>
+                    <input type="password" id="wm-password" class="form-control" placeholder="Password" required>
+                    <select id="wm-ward" class="form-control" required>
+                        <option value="">Select Ward...</option>
+                    </select>
+                    <button class="btn btn-primary" onclick="registerWardMember()" id="btn-reg-wm">Register</button>
+                    <p id="wm-error" style="color: var(--danger); font-size: 0.85rem; display: none;"></p>
+                    <p id="wm-success" style="color: var(--success); font-size: 0.85rem; display: none;"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Citizen Block Management -->
+        <div class="glass-card">
+            <h3 style="margin-bottom: 1rem;">Citizen Blocking Control</h3>
+            <p style="color:var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">Enter a Citizen's User ID to toggle their portal access block state in this jurisdiction.</p>
+            
+            <div style="display: flex; gap: 0.5rem;">
+                <input type="number" id="block-user-id" class="form-control" placeholder="User ID (e.g., 5)">
+                <button class="btn btn-danger" onclick="toggleBlock()">Toggle Block</button>
+            </div>
+            <p id="block-result" style="margin-top: 1rem; font-weight: 600; font-size: 0.9rem;"></p>
+        </div>
+    </div>
+</div>
+
+
+<!-- TAB 3: DEPARTMENTS -->
+<div id="tab-departments" class="tab-content">
+    <div class="glass-card">
+        <h3 style="margin-bottom: 1rem;">Active Departments</h3>
+        <table style="width: 100%; border-collapse: collapse; text-align: left; margin-bottom: 2rem;">
+            <thead>
+                <tr style="border-bottom: 1px solid var(--border);">
+                    <th style="padding: 1rem; color: var(--text-muted);">Department Name</th>
+                    <th style="padding: 1rem; color: var(--text-muted);">Description</th>
+                    <th style="padding: 1rem; color: var(--text-muted);">Assigned Head</th>
+                </tr>
+            </thead>
+            <tbody id="depts-list">
+                <tr><td colspan="3" style="text-align:center; padding: 2rem; color: var(--text-muted);">Loading Departments...</td></tr>
+            </tbody>
+        </table>
+        
+        <div id="new-dept-form" style="border-top: 1px solid var(--border); padding-top: 1.5rem;">
+            <h4 style="margin-bottom: 1rem;">Create New Department</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                <input type="text" id="new-dept-name" class="form-control" placeholder="Department Name (e.g. Roads)">
+                <input type="text" id="new-dept-desc" class="form-control" placeholder="Brief Description">
+                <button class="btn btn-primary" onclick="createDept()" style="padding: 0.75rem;">Create Department</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// --- UI Interactivity ---
+function switchTab(tabId, btn) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + tabId).classList.add('active');
+    btn.classList.add('active');
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    if(localStorage.getItem('user_role') !== 'ADMIN') {
+        window.location.href = "{% url 'home' %}";
+        return;
+    }
+
+    // 1. Fetch Complaints
+    const { data: cData } = await fetchAPI('/complaints/');
+    const complaints = cData ? (cData.results || cData) : [];
+    const clist = document.getElementById('admin-complaints');
+    if(!complaints || complaints.length === 0) {
+        clist.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 2rem; color: var(--text-muted);">System is currently empty.</td></tr>';
+    } else {
+        clist.innerHTML = '';
+        let pending = 0; let escalated = 0;
+        complaints.forEach(c => {
+            if(c.status !== 'Resolved' && c.status !== 'Escalated') pending++;
+            if(c.is_escalated) escalated++;
+            let statusClass = c.status.replace(' ', '');
+            let tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid var(--border)';
+            tr.innerHTML = `
+                <td style="padding: 1rem;">#${c.id}</td>
+                <td style="padding: 1rem;">${c.citizen_name}</td>
+                <td style="padding: 1rem; font-weight: 600;">${c.issue_category}</td>
+                <td style="padding: 1rem;"><span class="status-badge status-${statusClass}">${c.status}</span></td>
+                <td style="padding: 1rem;"><span style="color: ${c.priority_level === 'Critical' ? 'var(--danger)' : c.priority_level === 'Warning' ? 'var(--warning)' : 'var(--text-color)'}">${c.priority_level}</span></td>
+                <td style="padding: 1rem;" id="img-cell-admin-${c.id}">
+                    ${c.image ? '<span style="font-size:0.8rem; color:var(--text-muted);">Loading...</span>' : '-'}
+                </td>
+                <td style="padding: 1rem;">
+                    <a href="/complaint/track/?id=${c.id}" class="btn" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: var(--surface-color); color: white; border: 1px solid var(--primary-light);">Audit</a>
+                </td>
+            `;
+            clist.appendChild(tr);
+
+            if (c.image) {
+                fetch(c.image, { headers: getAuthHeaders() }).then(async r => {
+                    if (r.ok) {
+                        const url = URL.createObjectURL(await r.blob());
+                        document.getElementById(`img-cell-admin-${c.id}`).innerHTML = `<a href="${url}" target="_blank"><img src="${url}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border);"></a>`;
+                    }
+                });
+            }
+        });
+        document.getElementById('stat-total').innerText = complaints.length;
+        document.getElementById('stat-pending').innerText = pending;
+        document.getElementById('stat-escalated').innerText = escalated;
+    }
+
+    // 2. Fetch Wards
+    const { data: wData } = await fetchAPI('/wards/');
+    const wards = wData ? (wData.results || wData) : [];
+    const wlist = document.getElementById('wards-list');
+    const wselect = document.getElementById('wm-ward');
+    wlist.innerHTML = '';
+    if(wards && wards.length > 0) {
+        wards.forEach(w => {
+            wlist.innerHTML += `<li style="padding: 0.8rem 1rem; background: rgba(255,255,255,0.02); border-radius: 0.5rem; border: 1px solid var(--border);">${w.ward_name}</li>`;
+            if(wselect) wselect.innerHTML += `<option value="${w.id}">${w.ward_name}</option>`;
+        });
+    } else {
+        wlist.innerHTML = '<li style="color: var(--text-muted);">No Wards.</li>';
+    }
+
+    // 3. Fetch Departments
+    const { data: dData } = await fetchAPI('/departments/');
+    const depts = dData ? (dData.results || dData) : [];
+    const dlist = document.getElementById('depts-list');
+    if(!depts || depts.length === 0) {
+        dlist.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 2rem; color: var(--text-muted);">No Departments Found.</td></tr>';
+    } else {
+        dlist.innerHTML = '';
+        depts.forEach(w => {
+            let tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid var(--border)';
+            tr.innerHTML = `
+                <td style="padding: 1rem; font-weight: 600;">${w.department_name}</td>
+                <td style="padding: 1rem; color: var(--text-muted);">${w.description || 'N/A'}</td>
+                <td style="padding: 1rem;">${w.head_name || '<span style="color: var(--warning)">Unassigned</span>'}</td>
+            `;
+            dlist.appendChild(tr);
+        });
+    }
+});
+
+// --- Wards & Users Logic ---
+async function createWard() {
+    const name = document.getElementById('new-ward-name').value;
+    if(!name) return;
+    const { response } = await fetchAPI('/wards/', {
+        method: 'POST',
+        body: JSON.stringify({ ward_name: name })
+    });
+    if(response.ok) window.location.reload();
+    else alert('Failed to create ward');
+}
+
+async function registerWardMember() {
+    const err = document.getElementById('wm-error');
+    const succ = document.getElementById('wm-success');
+    const btn = document.getElementById('btn-reg-wm');
+    
+    err.style.display = 'none';
+    succ.style.display = 'none';
+    btn.disabled = true;
+    btn.innerHTML = 'Registering...';
+
+    const payload = {
+        username: document.getElementById('wm-username').value,
+        full_name: document.getElementById('wm-fullname').value,
+        email: document.getElementById('wm-email').value || null,
+        phone_number: document.getElementById('wm-phone').value,
+        password: document.getElementById('wm-password').value,
+        ward: document.getElementById('wm-ward').value,
+        role: 'WARD_MEMBER'
+    };
+
+    if(!payload.username || !payload.full_name || !payload.phone_number || !payload.password || !payload.ward) {
+        err.innerText = "Please fill all required fields.";
+        err.style.display = 'block';
+        btn.disabled = false;
+        btn.innerHTML = 'Register';
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/users/register/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok) {
+            succ.innerText = "Ward Member successfully registered!";
+            succ.style.display = 'block';
+            document.getElementById('wm-username').value = '';
+            document.getElementById('wm-fullname').value = '';
+            document.getElementById('wm-email').value = '';
+            document.getElementById('wm-phone').value = '';
+            document.getElementById('wm-password').value = '';
+        } else {
+            let errorText = '';
+            for (const key in data) { errorText += `<b>${key}</b>: ${data[key][0]}<br>`; }
+            err.innerHTML = errorText;
+            err.style.display = 'block';
+        }
+    } catch (e) {
+        err.innerText = "Network Error.";
+        err.style.display = 'block';
+    }
+    btn.disabled = false;
+    btn.innerHTML = 'Register';
+}
+
+async function toggleBlock() {
+    const uid = document.getElementById('block-user-id').value;
+    const resElem = document.getElementById('block-result');
+    if(!uid) return;
+    const { response, data } = await fetchAPI(`/users/block/${uid}/`, { method: 'POST' });
+    if(response.ok) {
+        resElem.style.color = "var(--success)";
+        resElem.innerText = data.message;
+    } else {
+        resElem.style.color = "var(--danger)";
+        resElem.innerText = data.error || "Failed to alter block state.";
+    }
+}
+
+// --- Departments Logic ---
+async function createDept() {
+    const name = document.getElementById('new-dept-name').value;
+    const desc = document.getElementById('new-dept-desc').value;
+    if(!name) return alert("Name is required");
+
+    const { response } = await fetchAPI('/departments/', {
+        method: 'POST',
+        body: JSON.stringify({ department_name: name, description: desc })
+    });
+    
+    if(response.ok) window.location.reload();
+    else alert('Failed to create department');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,246 @@
+{% extends 'frontend/base.html' %}
+
+{% block title %}Home | Civic Issue Portal{% endblock %}
+
+{% block content %}
+<style>
+    /* Hero animations */
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-15px); }
+        100% { transform: translateY(0px); }
+    }
+    
+    @keyframes pulse-glow {
+        0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+        70% { box-shadow: 0 0 0 20px rgba(99, 102, 241, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+    }
+
+    .hero-title {
+        font-size: 5rem;
+        font-weight: 900;
+        letter-spacing: -2px;
+        line-height: 1.1;
+        margin-bottom: 1.5rem;
+        background: radial-gradient(circle at top left, #ffffff 0%, #a5b4fc 50%, #4f46e5 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: float 6s ease-in-out infinite;
+    }
+
+    .hero-subtitle {
+        font-size: 1.3rem;
+        color: var(--text-muted);
+        max-width: 650px;
+        margin: 0 auto 3rem auto;
+        line-height: 1.8;
+    }
+
+    .cta-primary {
+        padding: 1.2rem 2.5rem;
+        font-size: 1.2rem;
+        border-radius: 9999px;
+        background: linear-gradient(135deg, var(--primary), #4338ca);
+        color: white;
+        text-decoration: none;
+        font-weight: 700;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.5);
+        animation: pulse-glow 2s infinite;
+        display: inline-block;
+    }
+
+    .cta-primary:hover {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 15px 35px -5px rgba(99, 102, 241, 0.7);
+    }
+
+    .cta-secondary {
+        padding: 1.2rem 2.5rem;
+        font-size: 1.2rem;
+        border-radius: 9999px;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: white;
+        text-decoration: none;
+        font-weight: 700;
+        transition: all 0.3s ease;
+        display: inline-block;
+    }
+
+    .cta-secondary:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-3px);
+    }
+
+    /* Decorative background blobs */
+    .blob {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(80px);
+        z-index: -1;
+        opacity: 0.5;
+        animation: float 10s ease-in-out infinite reverse;
+    }
+    .blob-1 {
+        top: 10%;
+        left: 20%;
+        width: 300px;
+        height: 300px;
+        background: #4f46e5;
+    }
+    .blob-2 {
+        top: 40%;
+        right: 15%;
+        width: 250px;
+        height: 250px;
+        background: #9333ea;
+        animation-delay: -2s;
+    }
+
+    /* Enhanced Feature Cards */
+    .feature-grid {
+        margin-top: 5rem;
+        margin-bottom: 5rem;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2.5rem;
+        position: relative;
+    }
+
+    .feature-card {
+        background: linear-gradient(180deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.8) 100%);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 1.5rem;
+        padding: 2.5rem 2rem;
+        text-align: left;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), #c084fc);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.4s ease;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+        border-color: rgba(99, 102, 241, 0.3);
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5), 0 0 20px rgba(99, 102, 241, 0.1);
+    }
+
+    .feature-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .icon-wrapper {
+        width: 4rem;
+        height: 4rem;
+        border-radius: 1rem;
+        background: rgba(99, 102, 241, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        margin-bottom: 1.5rem;
+        color: var(--primary-light);
+        border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+
+    .stat-bar {
+        margin-top: 6rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        padding-top: 4rem;
+        display: flex;
+        justify-content: space-around;
+        text-align: center;
+        flex-wrap: wrap;
+        gap: 2rem;
+    }
+
+    .stat-number {
+        font-size: 3rem;
+        font-weight: 900;
+        color: white;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, #818cf8, #c084fc);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+</style>
+
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+
+<div style="text-align: center; margin-top: 6rem; position: relative; z-index: 10;">
+    <h1 class="hero-title">Your Voice.<br>A Better City.</h1>
+    <p class="hero-subtitle">
+        Empower yourself and your community. The fastest, most transparent way to report and track civic issues directly with your local Ward Members and Departments.
+    </p>
+
+    <div style="display: flex; gap: 1.5rem; justify-content: center; align-items: center;" id="hero-actions">
+        <a href="{% url 'register_page' %}" class="cta-primary">🚀 Get Started Now</a>
+        <a href="{% url 'login_page' %}" class="cta-secondary">Sign In</a>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="stat-bar">
+        <div>
+            <div class="stat-number">24/7</div>
+            <div style="color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem;">Issue Reporting</div>
+        </div>
+        <div>
+            <div class="stat-number">100%</div>
+            <div style="color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem;">Transparency</div>
+        </div>
+        <div>
+            <div class="stat-number">Direct</div>
+            <div style="color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem;">Escalation Paths</div>
+        </div>
+    </div>
+
+    <div class="feature-grid">
+        <div class="feature-card">
+            <div class="icon-wrapper">📸</div>
+            <h3 style="margin-bottom: 1rem; color: #fff; font-size: 1.5rem; font-weight: 800;">Snap & Submit</h3>
+            <p style="color: var(--text-muted); font-size: 1.05rem; line-height: 1.6;">Quickly capture issues spanning from potholes to sanitation directly from your smartphone. Geolocation pins ensure exact pinpointing.</p>
+        </div>
+        <div class="feature-card">
+            <div class="icon-wrapper">⚡</div>
+            <h3 style="margin-bottom: 1rem; color: #fff; font-size: 1.5rem; font-weight: 800;">Instant Escalation</h3>
+            <p style="color: var(--text-muted); font-size: 1.05rem; line-height: 1.6;">Tickets are automatically routed to your exact Ward Member for immediate attention. Unresolved tickets escalate dynamically to Admins.</p>
+        </div>
+        <div class="feature-card">
+            <div class="icon-wrapper">🔍</div>
+            <h3 style="margin-bottom: 1rem; color: #fff; font-size: 1.5rem; font-weight: 800;">Live Transparency</h3>
+            <p style="color: var(--text-muted); font-size: 1.05rem; line-height: 1.6;">Track live progress, read official updates, and participate in an open-access resolution remark thread connecting you directly to officials.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const token = localStorage.getItem('access_token');
+    const role = localStorage.getItem('user_role');
+    if (token) {
+        let dashUrl = "{% url 'citizen_dashboard' %}";
+        if (role === 'ADMIN') dashUrl = "{% url 'admin_dashboard' %}";
+        else if (role === 'WARD_MEMBER') dashUrl = "{% url 'ward_member_dashboard' %}";
+        
+        document.getElementById('hero-actions').innerHTML = `
+            <a href="${dashUrl}" class="cta-primary">⚡ Enter Dashboard</a>
+        `;
+    }
+</script>
+{% endblock %}

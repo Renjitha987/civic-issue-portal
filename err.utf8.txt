@@ -1,0 +1,208 @@
+﻿python : Traceback 
+(most recent call 
+last):
+At line:1 char:30
++ .\venv\Scripts\Activa
+te.ps1; python 
+debug.py > out.txt 2>&1
++                      
+        ~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: (Traceback (mo   
+ st recent call las    
+t)::String) [], Re    
+moteException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+  File "D:\Civic 
+Complaint system\venv\L
+ib\site-packages\django
+\apps\config.py", line 
+235, in get_model
+    return self.models[
+model_name.lower()]
+           ~~~~~~~~~~~^
+^^^^^^^^^^^^^^^^^^^
+KeyError: 'user'
+
+During handling of the 
+above exception, 
+another exception 
+occurred:
+
+Traceback (most recent 
+call last):
+  File "D:\Civic 
+Complaint system\venv\L
+ib\site-packages\django
+\contrib\auth\__init__.
+py", line 290, in 
+get_user_model
+    return django_apps.
+get_model(settings.AUTH
+_USER_MODEL, 
+require_ready=False)
+           ~~~~~~~~~~~~
+~~~~~~~~~^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^
+  File "D:\Civic 
+Complaint system\venv\L
+ib\site-packages\django
+\apps\registry.py", 
+line 213, in get_model
+    return app_config.g
+et_model(model_name, re
+quire_ready=require_rea
+dy)
+           ~~~~~~~~~~~~
+~~~~~~~~^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^
+^^^
+  File "D:\Civic 
+Complaint system\venv\L
+ib\site-packages\django
+\apps\config.py", line 
+237, in get_model
+    raise LookupError(
+        "App '%s' 
+doesn't have a '%s' 
+model." % (self.label, 
+model_name)
+    )
+LookupError: App 
+'users' doesn't have a 
+'User' model.
+
+During handling of the 
+above exception, 
+another exception 
+occurred:
+
+Traceback (most recent 
+call last):
+  File "D:\Civic 
+Complaint 
+system\debug.py", line 
+7, in <module>
+    django.setup()
+    ~~~~~~~~~~~~^^
+  File "D:\Civic 
+Complaint system\venv\L
+ib\site-packages\django
+\__init__.py", line 
+24, in setup
+    apps.populate(setti
+ngs.INSTALLED_APPS)
+    ~~~~~~~~~~~~~^^^^^^
+^^^^^^^^^^^^^^^^^^^
+  File "D:\Civic 
+Complaint system\venv\L
+ib\site-packages\django
+\apps\registry.py", 
+line 124, in populate
+    app_config.ready()
+    ~~~~~~~~~~~~~~~~^^
+  File "D:\Civic 
+Complaint system\venv\L
+ib\site-packages\django
+\contrib\admin\apps.py"
+, line 27, in ready
+    self.module.autodis
+cover()
+    ~~~~~~~~~~~~~~~~~~~
+~~~~~^^
+  File "D:\Civic 
+Complaint system\venv\L
+ib\site-packages\django
+\contrib\admin\__init__
+.py", line 52, in 
+autodiscover
+    autodiscover_module
+s("admin", 
+register_to=site)
+    ~~~~~~~~~~~~~~~~~~~
+~^^^^^^^^^^^^^^^^^^^^^^
+^^^^^
+  File "D:\Civic 
+Complaint system\venv\L
+ib\site-packages\django
+\utils\module_loading.p
+y", line 58, in 
+autodiscover_modules
+    
+import_module("%s.%s" 
+% (app_config.name, 
+module_to_search))
+    ~~~~~~~~~~~~~^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^
+  File "C:\Users\renji\
+AppData\Local\Programs\
+Python\Python313\Lib\im
+portlib\__init__.py", 
+line 88, in 
+import_module
+    return _bootstrap._
+gcd_import(name[level:]
+, package, level)
+           ~~~~~~~~~~~~
+~~~~~~~~~~^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^
+  File "<frozen importl
+ib._bootstrap>", line 
+1387, in _gcd_import
+  File "<frozen importl
+ib._bootstrap>", line 
+1360, in _find_and_load
+  File "<frozen importl
+ib._bootstrap>", line 
+1331, in 
+_find_and_load_unlocked
+  File "<frozen importl
+ib._bootstrap>", line 
+935, in _load_unlocked
+  File "<frozen importl
+ib._bootstrap_external>
+", line 1026, in 
+exec_module
+  File "<frozen importl
+ib._bootstrap>", line 
+488, in _call_with_fram
+es_removed
+  File "D:\Civic 
+Complaint system\venv\L
+ib\site-packages\django
+\contrib\auth\admin.py"
+, line 6, in <module>
+    from django.contrib
+.auth.forms import (
+    ...<3 lines>...
+    )
+  File "D:\Civic 
+Complaint system\venv\L
+ib\site-packages\django
+\contrib\auth\forms.py"
+, line 19, in <module>
+    UserModel = 
+get_user_model()
+  File "D:\Civic 
+Complaint system\venv\L
+ib\site-packages\django
+\contrib\auth\__init__.
+py", line 296, in 
+get_user_model
+    raise 
+ImproperlyConfigured(
+    ...<2 lines>...
+    )
+django.core.exceptions.
+ImproperlyConfigured: 
+AUTH_USER_MODEL refers 
+to model 'users.User' 
+that has not been 
+installed

@@ -1,0 +1,81 @@
+{% extends 'frontend/base.html' %}
+
+{% block title %}Sign In | Civic Issue Portal{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: center; align-items: center; min-height: 70vh;">
+    <div class="glass-card" style="width: 100%; max-width: 400px;">
+        <h2 style="text-align: center; margin-bottom: 2rem; font-weight: 800; font-size: 1.8rem;">Welcome Back</h2>
+        
+        <div id="error-msg" style="color: var(--danger); font-size: 0.9rem; text-align: center; margin-bottom: 1rem; display: none;"></div>
+
+        <form id="login-form">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" class="form-control" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" class="form-control" required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;" id="login-btn">Sign In</button>
+        </form>
+        
+        <p style="text-align: center; margin-top: 1.5rem; color: var(--text-muted); font-size: 0.9rem;">
+            Don't have an account? <a href="{% url 'register_page' %}" style="color: var(--primary-light); text-decoration: none;">Register</a>
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('login-btn');
+    const err = document.getElementById('error-msg');
+    
+    btn.innerHTML = '<div class="loader"></div>';
+    btn.disabled = true;
+    err.style.display = 'none';
+
+    const payload = {
+        username: document.getElementById('username').value,
+        password: document.getElementById('password').value
+    };
+
+    try {
+        const res = await fetch('/api/users/login/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+        
+        const data = await res.json();
+        
+        if (res.ok) {
+            localStorage.setItem('access_token', data.access);
+            localStorage.setItem('refresh_token', data.refresh);
+            localStorage.setItem('user_role', data.role);
+            
+            if (data.role === 'ADMIN') window.location.href = "{% url 'admin_dashboard' %}";
+            else if (data.role === 'WARD_MEMBER') window.location.href = "{% url 'ward_member_dashboard' %}";
+            else if (data.role === 'DEPARTMENT_HEAD') window.location.href = "{% url 'department_head_dashboard' %}";
+            else window.location.href = "{% url 'citizen_dashboard' %}";
+        } else {
+            err.innerText = data.detail || data.non_field_errors?.[0] || 'Invalid credentials. Please try again.';
+            err.style.display = 'block';
+            btn.innerHTML = 'Sign In';
+            btn.disabled = false;
+        }
+    } catch (e) {
+        err.innerText = 'Network Error. Could not connect to the API.';
+        err.style.display = 'block';
+        btn.innerHTML = 'Sign In';
+        btn.disabled = false;
+    }
+});
+</script>
+{% endblock %}

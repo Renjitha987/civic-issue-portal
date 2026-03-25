@@ -1,0 +1,86 @@
+{% extends 'frontend/base.html' %}
+
+{% block title %}Ward Member Dashboard | Civic Issue Portal{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h2>Ward Management Dashboard</h2>
+    <div>
+        <span style="color: var(--text-muted); margin-right: 1rem;">Role: Ward Member</span>
+        <a href="{% url 'ward_management' %}" class="btn" style="background: var(--surface-color); color: white; border: 1px solid var(--border);">Citizen Blocks</a>
+    </div>
+</div>
+
+<div class="glass-card" style="margin-bottom: 2rem;">
+    <h3 style="margin-bottom: 1rem;">Issues in my Ward</h3>
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+                <tr style="border-bottom: 1px solid var(--border);">
+                    <th style="padding: 1rem; color: var(--text-muted);">ID</th>
+                    <th style="padding: 1rem; color: var(--text-muted);">Citizen</th>
+                    <th style="padding: 1rem; color: var(--text-muted);">Status</th>
+                    <th style="padding: 1rem; color: var(--text-muted);">Priority</th>
+                    <th style="padding: 1rem; color: var(--text-muted);">Image</th>
+                    <th style="padding: 1rem; color: var(--text-muted);">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="ward-complaints">
+                <tr><td colspan="6" style="text-align:center; padding: 2rem;">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    if(localStorage.getItem('user_role') !== 'WARD_MEMBER') {
+        window.location.href = "{% url 'home' %}";
+        return;
+    }
+
+    const { data: complaintsData } = await fetchAPI('/complaints/');
+    const complaints = complaintsData ? (complaintsData.results || complaintsData) : [];
+    const list = document.getElementById('ward-complaints');
+    
+    if(!complaints || complaints.length === 0) {
+        list.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 2rem; color: var(--text-muted);">No active complaints in your ward.</td></tr>';
+    } else {
+        list.innerHTML = '';
+        complaints.forEach(c => {
+            let statusClass = c.status.replace(' ', '');
+            let tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid var(--border)';
+            tr.innerHTML = `
+                <td style="padding: 1rem;">#${c.id}</td>
+                <td style="padding: 1rem;">${c.citizen_name}</td>
+                <td style="padding: 1rem; font-weight: 600;">${c.issue_category}</td>
+                <td style="padding: 1rem;"><span class="status-badge status-${statusClass}">${c.status}</span></td>
+                <td style="padding: 1rem;"><span style="color: ${c.priority_level === 'Critical' ? 'var(--danger)' : c.priority_level === 'Warning' ? 'var(--warning)' : 'var(--text-color)'}">${c.priority_level}</span></td>
+                <td style="padding: 1rem;" id="img-cell-${c.id}">
+                    ${c.image ? '<span style="font-size:0.8rem; color:var(--text-muted);">Loading...</span>' : '-'}
+                </td>
+                <td style="padding: 1rem;">
+                    <a href="/complaint/track/?id=${c.id}" class="btn" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: var(--surface-color); color: white; border: 1px solid var(--primary-light);">Manage</a>
+                </td>
+            `;
+            list.appendChild(tr);
+            
+            if (c.image) {
+                fetch(c.image, { headers: getAuthHeaders() }).then(async r => {
+                    if (r.ok) {
+                        const url = URL.createObjectURL(await r.blob());
+                        document.getElementById(`img-cell-${c.id}`).innerHTML = `<a href="${url}" target="_blank"><img src="${url}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border);"></a>`;
+                    } else {
+                        document.getElementById(`img-cell-${c.id}`).innerText = "Error";
+                    }
+                }).catch(() => { document.getElementById(`img-cell-${c.id}`).innerText = "Err"; });
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

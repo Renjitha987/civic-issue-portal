@@ -1,0 +1,203 @@
+{% extends 'frontend/base.html' %}
+
+{% block title %}Citizen Dashboard | Civic Issue Portal{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h2>My Dashboard</h2>
+    <a href="{% url 'submit_complaint' %}" class="btn btn-primary">Report Issue</a>
+</div>
+
+<div class="glass-card" style="margin-bottom: 2rem;">
+    <h3 style="margin-bottom: 1rem;">My Recent Complaints</h3>
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+                <tr style="border-bottom: 1px solid var(--border);">
+                    <th style="padding: 1rem; color: var(--text-muted);">ID</th>
+                    <th style="padding: 1rem; color: var(--text-muted);">Category</th>
+                    <th style="padding: 1rem; color: var(--text-muted);">Description</th>
+                    <th style="padding: 1rem; color: var(--text-muted);">Status</th>
+                    <th style="padding: 1rem; color: var(--text-muted);">Priority</th>
+                    <th style="padding: 1rem; color: var(--text-muted);">Image</th>
+                    <th style="padding: 1rem; color: var(--text-muted);">Action</th>
+                </tr>
+            </thead>
+            <tbody id="complaints-list">
+                <tr><td colspan="6" style="text-align:center; padding: 2rem;">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="glass-card">
+    <h3 style="margin-bottom: 1rem;">Notifications</h3>
+    <div id="notifications-list">
+        <p style="color: var(--text-muted);">Loading...</p>
+    </div>
+</div>
+
+<!-- Edit Complaint Modal -->
+<div id="edit-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(0,0,0,0.6); z-index: 999; justify-content: center; align-items: center; border-radius: 0;">
+    <div class="glass-card" style="width: 100%; max-width: 500px; padding: 2rem;">
+        <h3 style="margin-bottom: 1.5rem;">Edit Complaint</h3>
+        <input type="hidden" id="edit-id">
+        <div class="form-group">
+            <label>Type of Issue</label>
+            <select id="edit-category" class="form-control" required>
+                <option value="Waste">Waste Management</option>
+                <option value="Electricity">Public Electricity</option>
+                <option value="Road">Road & Infrastructure</option>
+                <option value="Health">Public Health</option>
+                <option value="Water">Water Supply</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Location</label>
+            <input type="text" id="edit-location" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label>Description</label>
+            <textarea id="edit-desc" class="form-control" rows="4" required></textarea>
+        </div>
+        
+        <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+            <button onclick="submitEdit()" class="btn btn-primary" style="flex: 1;" id="btn-submit-edit">Save Changes</button>
+            <button onclick="document.getElementById('edit-modal').style.display='none'" class="btn" style="flex: 1; background: var(--border); color: white;">Cancel</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let citizenComplaints = [];
+
+document.addEventListener('DOMContentLoaded', async () => {
+    // Check Authorization explicitly
+    if(localStorage.getItem('user_role') !== 'CITIZEN') {
+        window.location.href = "{% url 'home' %}";
+        return;
+    }
+
+    // Load Complaints
+    const { data: complaintsData } = await fetchAPI('/complaints/');
+    const complaints = complaintsData ? (complaintsData.results || complaintsData) : [];
+    const list = document.getElementById('complaints-list');
+    
+    if(!complaints || complaints.length === 0) {
+        list.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 2rem; color: var(--text-muted);">You have not reported any issues yet.</td></tr>';
+    } else {
+        list.innerHTML = '';
+        citizenComplaints = complaints;
+        complaints.forEach(c => {
+            const shortDesc = c.description.length > 40 ? c.description.slice(0, 40) + '...' : c.description;
+            let statusClass = c.status.replace(' ', '');
+            let tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid var(--border)';
+            tr.innerHTML = `
+                <td style="padding: 1rem;">#${c.id}</td>
+                <td style="padding: 1rem; font-weight: 600;">${c.issue_category}</td>
+                <td style="padding: 1rem;">${shortDesc}</td>
+                <td style="padding: 1rem;"><span class="status-badge status-${statusClass}">${c.status}</span></td>
+                <td style="padding: 1rem;">${c.priority_level}</td>
+                <td style="padding: 1rem;" id="img-cell-citizen-${c.id}">
+                    ${c.image ? '<span style="font-size:0.8rem; color:var(--text-muted);">Loading...</span>' : '-'}
+                </td>
+                <td style="padding: 1rem; display: flex; gap: 0.5rem; align-items: center;">
+                    <a href="/complaint/track/?id=${c.id}" class="btn" style="padding: 0.2rem 0.6rem; font-size: 0.8rem; background: var(--surface-color); color: var(--primary-light); border: 1px solid var(--primary-light);">Track</a>
+                    ${c.status === 'Pending' ? `
+                        <button onclick="openEditModal(${c.id})" class="btn" style="padding: 0.2rem 0.6rem; font-size: 0.8rem; background: var(--warning); color: white;">Edit</button>
+                        <button onclick="deleteComplaint(${c.id})" class="btn btn-danger" style="padding: 0.2rem 0.6rem; font-size: 0.8rem;">Delete</button>
+                    ` : ''}
+                </td>
+            `;
+            list.appendChild(tr);
+
+            if (c.image) {
+                fetch(c.image, { headers: getAuthHeaders() }).then(async r => {
+                    if (r.ok) {
+                        const url = URL.createObjectURL(await r.blob());
+                        document.getElementById(`img-cell-citizen-${c.id}`).innerHTML = `<a href="${url}" target="_blank"><img src="${url}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border);"></a>`;
+                    }
+                });
+            }
+        });
+    }
+
+    // Load Notifications
+    const { data: notificationsData } = await fetchAPI('/notifications/');
+    const notifications = notificationsData ? (notificationsData.results || notificationsData) : [];
+    const notifLayer = document.getElementById('notifications-list');
+    if(!notifications || notifications.length === 0) {
+        notifLayer.innerHTML = '<p style="color: var(--text-muted);">No new notifications.</p>';
+    } else {
+        notifLayer.innerHTML = '';
+        notifications.forEach(n => {
+            let div = document.createElement('div');
+            div.style.padding = '1rem';
+            div.style.borderBottom = '1px solid var(--border)';
+            div.innerHTML = `
+                <div style="display:flex; justify-content: space-between;">
+                    <strong>${n.sender_name}</strong>
+                    <span style="font-size: 0.8rem; color: var(--text-muted);">${new Date(n.created_at).toLocaleString()}</span>
+                </div>
+                <p style="margin-top: 0.5rem; ${n.is_read ? 'color: var(--text-muted)' : 'font-weight: 800; color: white;'}">${n.message}</p>
+                ${!n.is_read ? `<button onclick="markRead(${n.id}, this)" class="btn" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; margin-top: 0.5rem; background: var(--surface-color); color: white; border: 1px solid var(--border);">Mark Read</button>` : ''}
+            `;
+            notifLayer.appendChild(div);
+        });
+    }
+});
+
+async function markRead(id, btn) {
+    btn.innerHTML = '...';
+    await fetchAPI(`/notifications/${id}/mark_read/`, {method: 'POST'});
+    btn.parentElement.querySelector('p').style.color = 'var(--text-muted)';
+    btn.parentElement.querySelector('p').style.fontWeight = 'normal';
+    btn.remove();
+}
+
+function openEditModal(id) {
+    const c = citizenComplaints.find(x => x.id === id);
+    if(!c) return;
+    document.getElementById('edit-id').value = c.id;
+    document.getElementById('edit-category').value = c.issue_category;
+    document.getElementById('edit-location').value = c.location;
+    document.getElementById('edit-desc').value = c.description;
+    document.getElementById('edit-modal').style.display = 'flex';
+}
+
+async function submitEdit() {
+    const id = document.getElementById('edit-id').value;
+    const payload = {
+        issue_category: document.getElementById('edit-category').value,
+        location: document.getElementById('edit-location').value,
+        description: document.getElementById('edit-desc').value
+    };
+    
+    document.getElementById('btn-submit-edit').innerText = "Saving...";
+    const { response, data } = await fetchAPI(`/complaints/${id}/`, {
+        method: 'PATCH',
+        body: JSON.stringify(payload)
+    });
+    
+    if(response.ok) {
+        window.location.reload();
+    } else {
+        alert("Failed to update: " + (data.detail || "Validation Error. See description bounds."));
+        document.getElementById('btn-submit-edit').innerText = "Save Changes";
+    }
+}
+
+async function deleteComplaint(id) {
+    if(!confirm("Are you sure you want to delete this pending complaint? This action cannot be undone.")) return;
+    const { response } = await fetchAPI(`/complaints/${id}/`, { method: 'DELETE' });
+    if(response.ok) {
+        window.location.reload();
+    } else {
+        alert("Failed to delete complaint. It may have already been processed.");
+    }
+}
+</script>
+{% endblock %}
