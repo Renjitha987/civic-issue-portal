@@ -7,3 +7,4 @@ redis
 django-filter
 django-crontab
 Pillow
+reportlab

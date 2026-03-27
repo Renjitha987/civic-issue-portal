@@ -1,4 +1,4 @@
-from rest_framework import generics, status
+from rest_framework import generics, status, serializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -20,6 +20,18 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         return token
         
     def validate(self, attrs):
+        # Accept either username or email from clients and normalize whitespace.
+        login_value = attrs.get(self.username_field)
+        if isinstance(login_value, str):
+            login_value = login_value.strip()
+            attrs[self.username_field] = login_value
+            if '@' in login_value:
+                try:
+                    matched_user = User.objects.get(email__iexact=login_value)
+                    attrs[self.username_field] = matched_user.get_username()
+                except User.DoesNotExist:
+                    pass
+
         data = super().validate(attrs)
         if self.user.is_blocked:
             raise serializers.ValidationError('Your account has been blocked.')

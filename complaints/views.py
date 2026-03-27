@@ -7,8 +7,17 @@ from .models import Complaint, ComplaintForwarding, Remark
 from departments.models import Department
 from .serializers import ComplaintSerializer, RemarkSerializer
 from django.utils import timezone
+from django.http import HttpResponse, FileResponse
+import csv
+import io
+from datetime import timedelta
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
 
 class ComplaintViewSet(viewsets.ModelViewSet):
+    queryset = Complaint.objects.all()
     serializer_class = ComplaintSerializer
     permission_classes = [IsAuthenticated, BlockedUsersCannotAccess]
 
@@ -116,6 +125,57 @@ class ComplaintViewSet(viewsets.ModelViewSet):
         )
 
         return Response({'status': 'Complaint marked as resolved.'})
+
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def weekly_report(self, request):
+        if request.user.role != 'ADMIN':
+            return Response({'error': 'Unauthorized. Only admins can generate reports.'}, status=status.HTTP_403_FORBIDDEN)
+
+        report_type = request.query_params.get('report_type', 'csv').lower()
+        last_week = timezone.now() - timedelta(days=7)
+        complaints = Complaint.objects.filter(date_submitted__gte=last_week)
+
+        if report_type == 'csv':
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = 'attachment; filename="weekly_report.csv"'
+            writer = csv.writer(response)
+            writer.writerow(['ID', 'Citizen', 'Category', 'Status', 'Priority', 'Date Submitted'])
+            for c in complaints:
+                citizen_name = c.citizen.username if c.citizen else "Anonymous"
+                writer.writerow([c.id, citizen_name, c.issue_category, c.status, c.priority_level, c.date_submitted.strftime('%Y-%m-%d %H:%M')])
+            return response
+
+        elif report_type == 'pdf':
+            buffer = io.BytesIO()
+            doc = SimpleDocTemplate(buffer, pagesize=letter)
+            elements = []
+            styles = getSampleStyleSheet()
+
+            elements.append(Paragraph("Civic Issue Portal - Weekly Status Report", styles['Title']))
+            elements.append(Paragraph(f"Period: {last_week.strftime('%Y-%m-%d')} to {timezone.now().strftime('%Y-%m-%d')}", styles['Normal']))
+            elements.append(Spacer(1, 12))
+
+            data = [['ID', 'Citizen', 'Category', 'Status', 'Priority']]
+            for c in complaints:
+                citizen_name = c.citizen.username if c.citizen else "Anonymous"
+                data.append([str(c.id), citizen_name, c.issue_category, c.status, c.priority_level])
+
+            table = Table(data)
+            table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black)
+            ]))
+            elements.append(table)
+            doc.build(elements)
+            buffer.seek(0)
+            return FileResponse(buffer, as_attachment=True, filename='weekly_report.pdf')
+
+        return Response({'error': 'Invalid format. Choose pdf or csv.'}, status=status.HTTP_400_BAD_REQUEST)
 
 class RemarkViewSet(viewsets.ModelViewSet):
     serializer_class = RemarkSerializer

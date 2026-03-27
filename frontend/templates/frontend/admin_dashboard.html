@@ -65,6 +65,17 @@
         </div>
     </div>
 
+    <!-- Report Download Controls -->
+    <div class="glass-card" style="margin-bottom: 2rem; display: flex; gap: 1rem; align-items: center; justify-content: center; padding: 1.5rem;">
+        <h4 style="margin: 0; color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Weekly Intelligence Reports:</h4>
+        <button class="btn btn-primary" onclick="downloadReport('csv')" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none;">
+             <span style="margin-right: 0.5rem;">📥</span> Download CSV
+        </button>
+        <button class="btn btn-primary" onclick="downloadReport('pdf')" style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); border: none;">
+             <span style="margin-right: 0.5rem;">📥</span> Download PDF
+        </button>
+    </div>
+
     <!-- Tickets Table -->
     <div class="glass-card" style="margin-bottom: 2rem;">
         <h3 style="margin-bottom: 1rem;">All System Tickets</h3>
@@ -188,9 +199,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    // 1. Fetch Complaints
-    const { data: cData } = await fetchAPI('/complaints/');
-    const complaints = cData ? (cData.results || cData) : [];
+    // 1. Fetch All Complaints (Paginated)
+    let allComplaints = [];
+    let nextPage = '/complaints/';
+    while(nextPage) {
+        const { data: pageData } = await fetchAPI(nextPage);
+        if(pageData && pageData.results) {
+            allComplaints.push(...pageData.results);
+            // Extract just the endpoint path from full URL (e.g., '/complaints/?page=2')
+            nextPage = pageData.next ? pageData.next.replace(window.location.origin + '/api', '') : null;
+        } else if(pageData && Array.isArray(pageData)) {
+            allComplaints.push(...pageData);
+            nextPage = null;
+        } else {
+            nextPage = null;
+        }
+    }
+    const complaints = allComplaints;
     const clist = document.getElementById('admin-complaints');
     if(!complaints || complaints.length === 0) {
         clist.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 2rem; color: var(--text-muted);">System is currently empty.</td></tr>';
@@ -232,9 +257,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('stat-escalated').innerText = escalated;
     }
 
-    // 2. Fetch Wards
-    const { data: wData } = await fetchAPI('/wards/');
-    const wards = wData ? (wData.results || wData) : [];
+    // 2. Fetch All Wards (Paginated)
+    let allWards = [];
+    let nextWardPage = '/wards/';
+    while(nextWardPage) {
+        const { data: pageData } = await fetchAPI(nextWardPage);
+        if(pageData && pageData.results) {
+            allWards.push(...pageData.results);
+            nextWardPage = pageData.next ? pageData.next.replace(window.location.origin + '/api', '') : null;
+        } else if(pageData && Array.isArray(pageData)) {
+            allWards.push(...pageData);
+            nextWardPage = null;
+        } else {
+            nextWardPage = null;
+        }
+    }
+    const wards = allWards;
     const wlist = document.getElementById('wards-list');
     const wselect = document.getElementById('wm-ward');
     wlist.innerHTML = '';
@@ -247,9 +285,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         wlist.innerHTML = '<li style="color: var(--text-muted);">No Wards.</li>';
     }
 
-    // 3. Fetch Departments
-    const { data: dData } = await fetchAPI('/departments/');
-    const depts = dData ? (dData.results || dData) : [];
+    // 3. Fetch All Departments (Paginated)
+    let allDepts = [];
+    let nextDeptPage = '/departments/';
+    while(nextDeptPage) {
+        const { data: pageData } = await fetchAPI(nextDeptPage);
+        if(pageData && pageData.results) {
+            allDepts.push(...pageData.results);
+            nextDeptPage = pageData.next ? pageData.next.replace(window.location.origin + '/api', '') : null;
+        } else if(pageData && Array.isArray(pageData)) {
+            allDepts.push(...pageData);
+            nextDeptPage = null;
+        } else {
+            nextDeptPage = null;
+        }
+    }
+    const depts = allDepts;
     const dlist = document.getElementById('depts-list');
     if(!depts || depts.length === 0) {
         dlist.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 2rem; color: var(--text-muted);">No Departments Found.</td></tr>';
@@ -364,6 +415,33 @@ async function createDept() {
     
     if(response.ok) window.location.reload();
     else alert('Failed to create department');
+}
+
+async function downloadReport(reportFormat) {
+    const token = localStorage.getItem('access_token');
+    try {
+        const response = await fetch(`/api/complaints/weekly_report/?report_type=${reportFormat}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `weekly_report_${new Date().toISOString().split('T')[0]}.${reportFormat}`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            a.remove();
+        } else {
+            alert('Failed to generate report. Ensure you have admin privileges.');
+        }
+    } catch (error) {
+        console.error('Error downloading report:', error);
+        alert('Network error while downloading report.');
+    }
 }
 </script>
 {% endblock %}
