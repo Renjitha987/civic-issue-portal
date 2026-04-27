@@ -22,13 +22,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # Third-party
     'rest_framework',
-    'rest_framework.authtoken',
     'corsheaders',
     'django_filters',
 
-    # Local
     'users.apps.UsersConfig',
     'wards.apps.WardsConfig',
     'departments.apps.DepartmentsConfig',
@@ -42,7 +39,7 @@ INSTALLED_APPS = [
 # MIDDLEWARE
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # IMPORTANT
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware',
 
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -77,11 +74,11 @@ TEMPLATES = [
 WSGI_APPLICATION = 'civic_portal.wsgi.application'
 
 
-# DATABASE (Railway PostgreSQL)
+# DATABASE (Render PostgreSQL)
 DATABASES = {
     'default': dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR}/db.sqlite3",
-        conn_max_age=600
+        conn_max_age=600,
+        ssl_require=True
     )
 }
 
@@ -95,21 +92,21 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# INTERNATIONALIZATION
+# INTERNATIONAL
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
 
-# STATIC FILES (CRITICAL FOR RAILWAY)
+# STATIC FILES (VERY IMPORTANT)
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
-# MEDIA FILES
+# MEDIA
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
@@ -118,48 +115,21 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 AUTH_USER_MODEL = 'users.User'
 
 
-# LOGIN
-LOGIN_URL = 'login_page'
-
-
-# DJANGO REST FRAMEWORK
+# REST FRAMEWORK
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
-    'DEFAULT_FILTER_BACKENDS': (
-        'django_filters.rest_framework.DjangoFilterBackend',
-    ),
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10,
 }
 
 
-# JWT SETTINGS
+# JWT
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': datetime.timedelta(days=1),
     'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=7),
-    'ROTATE_REFRESH_TOKENS': False,
-    'BLACKLIST_AFTER_ROTATION': False,
-    'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
-    'AUTH_HEADER_TYPES': ('Bearer',),
-    'USER_ID_FIELD': 'id',
-    'USER_ID_CLAIM': 'user_id',
 }
 
 
 # CORS
 CORS_ALLOW_ALL_ORIGINS = True
-
-
-# CELERY (DISABLED for Railway unless Redis added)
-# Uncomment only if you add Redis in Railway
-"""
-CELERY_BROKER_URL = os.environ.get('REDIS_URL')
-CELERY_RESULT_BACKEND = os.environ.get('REDIS_URL')
-CELERY_ACCEPT_CONTENT = ['application/json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = TIME_ZONE
-"""
