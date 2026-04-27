@@ -6,7 +6,33 @@
 <style>
     body {
         overflow-x: hidden;
+        background-color: #f8fafc !important;
+        color: #0f172a !important;
     }
+
+    /* Override Global Dark Variables for this page */
+    :root {
+        --border: #e2e8f0;
+        --text-muted: #64748b;
+        --text-color: #0f172a;
+        --primary-light: #3b82f6;
+        --surface-color: #ffffff;
+        --surface-hover: #f1f5f9;
+        --primary: #2563eb;
+        --success: #16a34a;
+        --warning: #d97706;
+        --danger: #dc2626;
+    }
+
+    /* Convert glass-card to a clean light card */
+    .glass-card {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
+        backdrop-filter: none !important;
+    }
+
     .dashboard-layout {
         display: flex;
         min-height: calc(100vh - 65px);
@@ -17,7 +43,7 @@
     /* Sidebar */
     .sidebar {
         width: var(--sidebar-width);
-        background: rgba(11, 15, 26, 0.4);
+        background: #ffffff;
         border-right: 1px solid var(--border);
         padding: 1.5rem 1rem;
         display: flex;
@@ -27,6 +53,7 @@
         position: sticky;
         top: 65px;
         height: calc(100vh - 65px);
+        box-shadow: 2px 0 10px rgba(0,0,0,0.02);
     }
 
     .nav-item {
@@ -45,20 +72,21 @@
     }
 
     .nav-item:hover {
-        background: rgba(255, 255, 255, 0.03);
+        background: #f1f5f9;
         color: var(--text-color);
     }
 
     .nav-item.active {
-        background: rgba(99, 102, 241, 0.1);
-        color: var(--primary-light);
-        border-color: rgba(99, 102, 241, 0.2);
+        background: #eff6ff;
+        color: var(--primary);
+        border-color: #bfdbfe;
+        font-weight: 600;
     }
 
     /* Main Content */
     .main-content {
         flex: 1;
-        padding: 2rem;
+        padding: 2.5rem;
         overflow-y: auto;
     }
 
@@ -101,7 +129,7 @@
     }
 
     .kanban-column {
-        background: rgba(15, 23, 42, 0.3);
+        background: #f1f5f9;
         border: 1px solid var(--border);
         border-radius: 1.25rem;
         padding: 1.25rem;
@@ -124,17 +152,18 @@
     }
 
     .ticket-card {
-        background: var(--surface-color);
+        background: #ffffff;
         border: 1px solid var(--border);
         border-radius: 1rem;
         padding: 1.25rem;
         cursor: pointer;
         transition: all 0.2s;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
 
     .ticket-card:hover {
         border-color: var(--primary-light);
-        background: var(--surface-hover);
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
         transform: translateY(-2px);
     }
 
@@ -149,7 +178,7 @@
     .category-pill {
         display: inline-block;
         padding: 0.2rem 0.6rem;
-        background: rgba(255, 255, 255, 0.05);
+        background: #f1f5f9;
         border-radius: 4px;
         font-size: 0.7rem;
         font-weight: 600;
@@ -168,11 +197,12 @@
     .filter-bar {
         display: flex;
         gap: 0.5rem;
-        background: rgba(0, 0, 0, 0.2);
+        background: #ffffff;
         padding: 0.35rem;
         border-radius: 0.75rem;
         border: 1px solid var(--border);
         margin-bottom: 1.5rem;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
 
     .filter-btn {
@@ -185,11 +215,11 @@
         transition: all 0.2s;
     }
 
-    .filter-btn:hover { color: var(--text-color); }
+    .filter-btn:hover { color: var(--text-color); background: #f8fafc; }
     .filter-btn.active {
         background: var(--primary);
         color: white;
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
     }
 
     /* Tables */
@@ -209,7 +239,7 @@
 
     .data-table td {
         padding: 1.25rem 1rem;
-        background: rgba(255, 255, 255, 0.02);
+        background: #f8fafc;
         border-top: 1px solid var(--border);
         border-bottom: 1px solid var(--border);
     }

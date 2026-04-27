@@ -205,6 +205,44 @@
 </head>
 <body>
 
+    <!-- Government Portal Header -->
+    <div class="gov-header" style="background: linear-gradient(to right, #0a3a82, #1456a3); font-family: 'Inter', sans-serif; position: relative;">
+        <!-- Faint background pattern -->
+        <div style="position: absolute; top: 0; right: 0; bottom: 0; left: 0; background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Rashtrapati_Bhavan_-_New_Delhi.jpg/1200px-Rashtrapati_Bhavan_-_New_Delhi.jpg'); background-size: cover; background-position: center; opacity: 0.15; pointer-events: none;"></div>
+        
+        <div style="max-width: 1400px; margin: 0 auto; padding: 0.5rem 1.5rem; display: flex; justify-content: space-between; align-items: stretch; position: relative; z-index: 1;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" alt="Satyameva Jayate" style="height: 65px; filter: brightness(0) invert(1);">
+                <div>
+                    <h1 style="color: white; font-size: 1.3rem; font-weight: 700; margin: 0; letter-spacing: 0.5px; text-transform: uppercase;">National Government Services Portal</h1>
+                    <p style="color: rgba(255,255,255,0.9); font-size: 0.85rem; margin: 0;">Find Government Services Faster</p>
+                </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end; padding-top: 5px;">
+                <div style="display: flex; gap: 15px; font-size: 0.75rem; color: white; align-items: center;">
+                    <a href="#" style="color: white; text-decoration: none;">Skip to main content</a>
+                    <div style="display: flex; gap: 8px;">
+                        <a href="#" style="color: white; text-decoration: none;">+A</a>
+                        <a href="#" style="color: white; text-decoration: none;">A</a>
+                        <a href="#" style="color: white; text-decoration: none;">-A</a>
+                    </div>
+                    <div style="display: flex; gap: 4px;">
+                        <div style="width: 12px; height: 12px; background: black; border: 1px solid white; cursor: pointer;"></div>
+                        <div style="width: 12px; height: 12px; background: white; border: 1px solid black; cursor: pointer;"></div>
+                    </div>
+                    <a href="#" style="color: #fde047; text-decoration: none;">हिन्दी</a>
+                </div>
+                <div style="text-align: right; margin-top: auto; padding-bottom: 5px; display: flex; flex-direction: column; align-items: flex-end; line-height: 1;">
+                    <span style="color: rgba(255,255,255,0.9); font-size: 0.7rem; font-style: italic; margin-bottom: 2px;">an initiative under</span>
+                    <div style="font-weight: 900; font-size: 1.3rem; letter-spacing: -0.5px; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
+                        <span style="color: #ec4899;">in</span><span style="color: #22c55e;">d</span><span style="color: #eab308;">i</span><span style="color: #3b82f6;">a</span><span style="color: white;">.gov.in</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <nav class="navbar">
         <a href="{% url 'home' %}" class="navbar-brand">Civic Portal</a>
         <div class="nav-links" id="nav-container">

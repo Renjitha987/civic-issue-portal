@@ -5,77 +5,61 @@
 {% block content %}
 <!-- Include Bootstrap 5 specifically for the homepage components -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<!-- Override Bootstrap body backgrounds to preserve base.html styling -->
+<!-- Override Bootstrap body backgrounds to preserve base.html styling while making homepage light -->
 <style>
     body {
         overflow-x: hidden;
-        background-color: var(--bg-color) !important;
-        color: var(--text-color) !important;
+        background-color: #ffffff !important;
+        color: #1f2937 !important;
     }
     
-    /* Hero Bleed */
-    .hero-bleed {
+    /* Hero Section */
+    .hero-light {
         width: 100vw;
         margin-left: calc(50% - 50vw);
-        position: relative;
-        overflow: hidden;
-        min-height: 85vh;
-        display: flex;
-        align-items: center;
-        padding-top: 3rem;
-        margin-top: -3rem; /* Hug the navbar */
-    }
-
-    /* Dramatic sweeping curve moved to a class for layering */
-    .hero-curve-overlay {
-        position: absolute;
-        top: -10%;
-        right: -10%;
-        width: 60%;
-        height: 120%;
-        background: radial-gradient(circle at center, rgba(168,85,247,0.15) 0%, transparent 65%);
-        border-radius: 50%;
-        border-left: 2px solid rgba(255,255,255,0.05);
-        pointer-events: none;
-        z-index: 2;
+        background-color: #f8fafc;
+        padding: 6rem 0;
+        border-bottom: 1px solid #e2e8f0;
     }
 
     .hero-title-text {
-        font-size: clamp(3rem, 5vw, 4.5rem);
-        font-weight: 900;
-        color: #ffffff;
-        line-height: 1.1;
-        letter-spacing: -1.5px;
-        text-transform: uppercase;
-        background: linear-gradient(to right, #ffffff, #d8b4fe);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        font-size: clamp(2.5rem, 5vw, 4rem);
+        font-weight: 800;
+        color: #0f172a;
+        line-height: 1.2;
+        letter-spacing: -1px;
     }
 
-    /* Custom UI Components integrated with Bootstrap */
-    .glass-card-bs {
-        background: rgba(255, 255, 255, 0.03);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 12px;
-        transition: transform 0.3s ease, border-color 0.3s ease;
+    .hero-title-text span {
+        color: #2563eb;
     }
-    .glass-card-bs:hover {
+
+    /* Light Theme Cards */
+    .feature-card-light {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+    }
+    .feature-card-light:hover {
         transform: translateY(-5px);
-        border-color: rgba(168, 85, 247, 0.4);
-        background: rgba(255, 255, 255, 0.06);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        border-color: #cbd5e1;
     }
     
-    .icon-box-bs {
-        width: 50px;
-        height: 50px;
-        border-radius: 10px;
-        background: rgba(168, 85, 247, 0.15);
+    .icon-box-light {
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
+        background: #eff6ff;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #d8b4fe;
-        margin-bottom: 1rem;
+        color: #2563eb;
+        margin-bottom: 1.5rem;
     }
 
     /* Floating Badges */
@@ -88,9 +72,9 @@
         gap: 0.5rem;
         z-index: 1000;
     }
-    .bot-btn-bs {
-        background: rgba(16, 185, 129, 0.9);
-        color: white !important;
+    .bot-btn-light {
+        background: #ffffff;
+        color: #1f2937 !important;
         padding: 0.6rem 1.2rem;
         border-radius: 8px;
         font-size: 0.85rem;
@@ -99,212 +83,94 @@
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        transition: transform 0.2s, background 0.2s;
-        backdrop-filter: blur(5px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        border: 1px solid #e2e8f0;
+        transition: transform 0.2s, box-shadow 0.2s;
     }
-    .bot-btn-bs:hover {
-        transform: scale(1.05);
-        background: rgba(16, 185, 129, 1);
+    .bot-btn-light:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.12);
     }
 
-    /* Override Bootstrap Accordion for Dark Mode */
+    /* Accordion Light Override */
     .accordion-item {
-        background: rgba(255, 255, 255, 0.03) !important;
-        border: 1px solid rgba(255, 255, 255, 0.05) !important;
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
         margin-bottom: 0.5rem;
         border-radius: 8px !important;
         overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
     .accordion-button {
         background: transparent !important;
-        color: #f8fafc !important;
+        color: #0f172a !important;
         font-weight: 600;
         box-shadow: none !important;
     }
-    .accordion-button::after {
-        filter: invert(1);
+    .accordion-button:not(.collapsed) {
+        color: #2563eb !important;
+        background: #f8fafc !important;
     }
     .accordion-body {
-        color: #cbd5e1;
-    }
-    
-    .btn-action-outline {
-        border: 1px solid rgba(255,255,255,0.3);
-        color: white;
-        background: rgba(255,255,255,0.05);
-        font-weight: 600;
-        backdrop-filter: blur(5px);
-    }
-    .btn-action-outline:hover {
-        background: rgba(168, 85, 247, 0.2);
-        border-color: #a855f7;
-        color: white;
-    }
-    .btn-action-primary {
-        background: linear-gradient(135deg, #818cf8 0%, #c084fc 100%);
-        color: white;
-        font-weight: 600;
-        border: none;
-    }
-    .btn-action-primary:hover {
-        opacity: 0.9;
-        color: white;
+        color: #475569;
     }
 </style>
 
-<!-- Wrap everything in Bootstrap's Dark Mode data attribute -->
-<div data-bs-theme="dark">
-    
-    <!-- Hero Section -->
-    <section class="hero-bleed">
-        <!-- Background Image Carousel -->
-        <div id="heroCarousel" class="carousel slide carousel-fade position-absolute top-0 start-0 w-100 h-100" data-bs-ride="carousel" style="z-index: 1;">
-            <div class="carousel-inner w-100 h-100">
-                <div class="carousel-item active w-100 h-100" data-bs-interval="4000">
-                    <img src="https://images.unsplash.com/photo-1449844908441-8829872d2607?auto=format&fit=crop&w=1600&q=80" class="d-block w-100 h-100 object-fit-cover" alt="Cityscape">
-                </div>
-                <div class="carousel-item w-100 h-100" data-bs-interval="4000">
-                    <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1600&q=80" class="d-block w-100 h-100 object-fit-cover" alt="Smart Architecture">
-                </div>
-                <div class="carousel-item w-100 h-100" data-bs-interval="4000">
-                    <img src="https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=1600&q=80" class="d-block w-100 h-100 object-fit-cover" alt="Governance">
-                </div>
-            </div>
-            <!-- Dark Overlay to keep text perfectly legible -->
-            <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(135deg, rgba(30,11,75,0.85) 0%, rgba(8,15,33,0.92) 100%); z-index: 2;"></div>
-            <!-- The glowing curve -->
-            <div class="hero-curve-overlay"></div>
+<!-- Hero Section -->
+<section class="hero-light">
+    <div class="container text-center">
+        <h1 class="hero-title-text mb-4">Report Today, Build Tomorrow's <span>Future</span></h1>
+        <p class="fs-5 mb-5" style="color: #475569; max-width: 800px; margin: 0 auto;">Empower your voice, drive accountability, and help create sustainable, people-first cities through our unified civic issue resolution portal.</p>
+        
+        <div class="d-flex justify-content-center gap-3 mb-5">
+            <a href="{% url 'register_page' %}" class="btn btn-primary btn-lg px-5 py-3 fw-bold shadow-sm" style="background-color: #2563eb; border-color: #2563eb; border-radius: 8px;">START NOW</a>
+            <a href="{% url 'login_page' %}" class="btn btn-outline-primary btn-lg px-5 py-3 fw-bold shadow-sm" style="border-radius: 8px;" id="dash-link">SIGN IN</a>
         </div>
-
-        <div class="container position-relative z-3">
-            <div class="row">
-                <div class="col-lg-8">
-                    <h1 class="hero-title-text mb-4">Connecting Citizens,<p>Streamlining Governance</p></h1>
-                    <p class="fs-4 text-light mb-5" style="opacity: 0.85;">The unified digital standard for civic transparency and rapid issue resolution.</p>
-                    
-                    <div class="d-flex flex-wrap gap-3">
-                        <a href="{% url 'register_page' %}" class="btn btn-action-primary px-4 py-3 rounded-3 shadow">Report an Issue</a>
-                        <a href="{% url 'login_page' %}" class="btn btn-action-outline px-4 py-3 rounded-3" id="dash-link">Sign In</a>
-                        <a href="#about" class="btn btn-action-outline px-4 py-3 rounded-3">Milestones</a>
-                        <a href="#features" class="btn btn-action-outline px-4 py-3 rounded-3">Priority Projects</a>
-                    </div>
+        
+        <!-- Interactive Value Prop Block -->
+        <div class="mt-5 p-5 text-start shadow-lg" style="background-color: #1e3a8a; border-radius: 20px; color: white; position: relative; overflow: hidden; max-width: 1100px; margin: 0 auto;">
+            <!-- Decorative background -->
+            <div style="position: absolute; top: -100px; right: -50px; width: 400px; height: 400px; background: radial-gradient(circle, rgba(59,130,246,0.3) 0%, transparent 70%); border-radius: 50%;"></div>
+            
+            <div class="row align-items-center position-relative z-3">
+                <div class="col-lg-5 mb-4 mb-lg-0 pe-lg-5">
+                    <h2 class="display-6 fw-bold lh-base" style="color: white;">From Everyday Problems to Community-Driven Solutions</h2>
+                    <p class="mt-3 opacity-75">Join thousands of citizens taking an active role in their municipality's development.</p>
                 </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- About Section -->
-    <section id="about" class="py-5 my-5">
-        <div class="container">
-            <div class="row justify-content-center text-center mb-5">
-                <div class="col-lg-8">
-                    <h2 class="display-5 fw-bold mb-3">About Civic Issue Portal</h2>
-                    <div class="mx-auto" style="width: 60px; height: 4px; background: #a855f7; border-radius: 2px;"></div>
-                </div>
-            </div>
-            <div class="row align-items-center g-5">
-                <div class="col-lg-6">
-                    <p class="fs-5 text-light opacity-75 lh-base">
-                        The Civic Issue Portal is a unified digital ecosystem designed to streamline interactions between citizens, Ward Members, and Department Heads. Built with absolute transparency in mind, it provides a direct, uninterrupted channel to report local infrastructure issues, monitor project timelines, and ensure efficient, prioritized resolution for a better, scalable governing tomorrow.
-                    </p>
-                    <p class="fs-5 text-light opacity-75 lh-base">
-                        By embracing decentralization, we empower local governments to act swiftly and efficiently on grassroots feedback, fostering unparalleled civic growth aligning directly with priority municipal initiatives.
-                    </p>
-                </div>
-                <div class="col-lg-6">
-                    <div class="glass-card-bs p-4">
-                        <h4 class="fw-bold mb-4">Core Principles</h4>
-                        <ul class="list-unstyled mb-0">
-                            <li class="d-flex align-items-center mb-3">
-                                <i data-lucide="check-circle" class="text-success me-3"></i> <span class="fs-5 text-light">100% Digital Transparency</span>
-                            </li>
-                            <li class="d-flex align-items-center mb-3">
-                                <i data-lucide="check-circle" class="text-success me-3"></i> <span class="fs-5 text-light">Direct Escalation Routing</span>
-                            </li>
-                            <li class="d-flex align-items-center mb-3">
-                                <i data-lucide="check-circle" class="text-success me-3"></i> <span class="fs-5 text-light">Real-time Ward Monitoring</span>
-                            </li>
-                            <li class="d-flex align-items-center">
-                                <i data-lucide="check-circle" class="text-success me-3"></i> <span class="fs-5 text-light">Sustainable Localisation of SDGs</span>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Features Section using Bootstrap Grid & Cards -->
-    <section id="features" class="py-5" style="background: rgba(255,255,255,0.02)">
-        <div class="container py-5">
-            <h2 class="display-6 fw-bold text-center mb-5">Platform Capabilities</h2>
-            <div class="row g-4">
-                <div class="col-md-4">
-                    <div class="glass-card-bs p-4 h-100 text-center">
-                        <div class="icon-box-bs mx-auto"><i data-lucide="camera"></i></div>
-                        <h4 class="fw-bold">Snap & Submit</h4>
-                        <p class="text-light opacity-75 mt-3">Quickly capture issues spanning from potholes to sanitation directly from your smartphone with precise location data.</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="glass-card-bs p-4 h-100 text-center">
-                        <div class="icon-box-bs mx-auto"><i data-lucide="zap"></i></div>
-                        <h4 class="fw-bold">Instant Escalation</h4>
-                        <p class="text-light opacity-75 mt-3">Tickets are geographically analyzed and automatically routed to your exact Ward Member and relevant Department Head.</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="glass-card-bs p-4 h-100 text-center">
-                        <div class="icon-box-bs mx-auto"><i data-lucide="bar-chart"></i></div>
-                        <h4 class="fw-bold">Live Tracking</h4>
-                        <p class="text-light opacity-75 mt-3">Track progress live via a unified Kanban-board style interface and participate in open-access resolution threads.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- FAQ Section -->
-    <section class="py-5 my-5">
-        <div class="container">
-            <h2 class="display-6 fw-bold text-center mb-5">Frequently Asked Questions</h2>
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="accordion" id="faqAccordion">
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
-                                    Who can register on the portal?
-                                </button>
-                            </h2>
-                            <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                <div class="accordion-body">
-                                    Any citizen residing in the participating Panchayats can sign up using their Aadhaar ID. Ward Members and Department Heads are pre-registered by System Administrators.
+                <div class="col-lg-7">
+                    <div class="d-flex flex-column gap-3">
+                        <div class="p-3" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; backdrop-filter: blur(10px);">
+                            <div class="d-flex gap-3 align-items-center">
+                                <div style="width: 48px; height: 48px; border-radius: 10px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <i data-lucide="message-square" style="width: 24px; height: 24px; color: white;"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-1 text-white">Community Power</h6>
+                                    <p class="mb-0" style="color: rgba(255, 255, 255, 0.85); font-size: 0.9rem;">Report and support issues together with your neighbors.</p>
                                 </div>
                             </div>
                         </div>
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
-                                    How long does it take for a complaint to be addressed?
-                                </button>
-                            </h2>
-                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                <div class="accordion-body">
-                                    Priority routing ensures immediate notification. Average initial review by municipal officials takes 24-48 hours depending on issue severity.
+                        
+                        <div class="p-3" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; backdrop-filter: blur(10px);">
+                            <div class="d-flex gap-3 align-items-center">
+                                <div style="width: 48px; height: 48px; border-radius: 10px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <i data-lucide="map-pin" style="width: 24px; height: 24px; color: white;"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-1 text-white">Smart Tracking</h6>
+                                    <p class="mb-0" style="color: rgba(255, 255, 255, 0.85); font-size: 0.9rem;">Follow your report in real time with live updates and maps.</p>
                                 </div>
                             </div>
                         </div>
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
-                                    Can I attach photos to my report?
-                                </button>
-                            </h2>
-                            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                <div class="accordion-body">
-                                    Yes, clicking "Report Issue" allows you to seamlessly attach image evidence of the civic problem, which is vital for quick verification.
+                        
+                        <div class="p-3" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; backdrop-filter: blur(10px);">
+                            <div class="d-flex gap-3 align-items-center">
+                                <div style="width: 48px; height: 48px; border-radius: 10px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <i data-lucide="shield-check" style="width: 24px; height: 24px; color: white;"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-1 text-white">Trusted Resolution</h6>
+                                    <p class="mb-0" style="color: rgba(255, 255, 255, 0.85); font-size: 0.9rem;">Direct routing to appropriate departments for efficient handling.</p>
                                 </div>
                             </div>
                         </div>
@@ -312,17 +178,144 @@
                 </div>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
-</div> <!-- End Bootstrap Dark Theme Wrapper -->
+<!-- Features Section -->
+<section id="features" class="py-5" style="background-color: #ffffff;">
+    <div class="container py-5">
+        <h2 class="display-6 fw-bold text-center mb-5" style="color: #0f172a;">Platform Capabilities</h2>
+        <div class="row g-4 justify-content-center">
+            <div class="col-md-4">
+                <div class="feature-card-light text-center">
+                    <div class="icon-box-light mx-auto"><i data-lucide="camera" style="width: 28px; height: 28px;"></i></div>
+                    <h4 class="fw-bold" style="color: #1e293b;">Snap & Submit</h4>
+                    <p class="mt-3 text-muted">Quickly capture issues spanning from potholes to sanitation directly from your smartphone with precise location data.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card-light text-center">
+                    <div class="icon-box-light mx-auto"><i data-lucide="zap" style="width: 28px; height: 28px;"></i></div>
+                    <h4 class="fw-bold" style="color: #1e293b;">Instant Escalation</h4>
+                    <p class="mt-3 text-muted">Tickets are geographically analyzed and automatically routed to your exact Ward Member and relevant Department Head.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card-light text-center">
+                    <div class="icon-box-light mx-auto"><i data-lucide="bar-chart" style="width: 28px; height: 28px;"></i></div>
+                    <h4 class="fw-bold" style="color: #1e293b;">Live Tracking</h4>
+                    <p class="mt-3 text-muted">Track progress live via a unified Kanban-board style interface and participate in open-access resolution threads.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- About Section -->
+<section id="about" class="py-5" style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
+    <div class="container py-4">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <h2 class="display-6 fw-bold mb-4" style="color: #0f172a;">About Civic Issue Portal</h2>
+                <div style="width: 60px; height: 4px; background: #2563eb; border-radius: 2px; margin-bottom: 1.5rem;"></div>
+                <p class="fs-5 text-muted lh-base">
+                    The Civic Issue Portal is a unified digital ecosystem designed to streamline interactions between citizens, Ward Members, and Department Heads. Built with absolute transparency in mind, it provides a direct, uninterrupted channel to report local infrastructure issues.
+                </p>
+                <p class="fs-5 text-muted lh-base">
+                    By embracing decentralization, we empower local governments to act swiftly and efficiently on grassroots feedback, fostering unparalleled civic growth.
+                </p>
+            </div>
+            <div class="col-lg-6">
+                <div class="feature-card-light p-5">
+                    <h4 class="fw-bold mb-4" style="color: #0f172a;">Core Principles</h4>
+                    <ul class="list-unstyled mb-0">
+                        <li class="d-flex align-items-center mb-4">
+                            <div style="width: 32px; height: 32px; border-radius: 50%; background: #dcfce7; display: flex; align-items: center; justify-content: center; margin-right: 1rem;">
+                                <i data-lucide="check" style="color: #16a34a; width: 18px;"></i>
+                            </div>
+                            <span class="fs-5 text-dark fw-medium">100% Digital Transparency</span>
+                        </li>
+                        <li class="d-flex align-items-center mb-4">
+                            <div style="width: 32px; height: 32px; border-radius: 50%; background: #dcfce7; display: flex; align-items: center; justify-content: center; margin-right: 1rem;">
+                                <i data-lucide="check" style="color: #16a34a; width: 18px;"></i>
+                            </div>
+                            <span class="fs-5 text-dark fw-medium">Direct Escalation Routing</span>
+                        </li>
+                        <li class="d-flex align-items-center mb-4">
+                            <div style="width: 32px; height: 32px; border-radius: 50%; background: #dcfce7; display: flex; align-items: center; justify-content: center; margin-right: 1rem;">
+                                <i data-lucide="check" style="color: #16a34a; width: 18px;"></i>
+                            </div>
+                            <span class="fs-5 text-dark fw-medium">Real-time Ward Monitoring</span>
+                        </li>
+                        <li class="d-flex align-items-center">
+                            <div style="width: 32px; height: 32px; border-radius: 50%; background: #dcfce7; display: flex; align-items: center; justify-content: center; margin-right: 1rem;">
+                                <i data-lucide="check" style="color: #16a34a; width: 18px;"></i>
+                            </div>
+                            <span class="fs-5 text-dark fw-medium">Sustainable Localisation of SDGs</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="py-5 my-4" style="background-color: #ffffff;">
+    <div class="container py-4">
+        <h2 class="display-6 fw-bold text-center mb-5" style="color: #0f172a;">Frequently Asked Questions</h2>
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                Who can register on the portal?
+                            </button>
+                        </h2>
+                        <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Any citizen residing in the participating Panchayats can sign up using their Aadhaar ID. Ward Members and Department Heads are pre-registered by System Administrators.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                How long does it take for a complaint to be addressed?
+                            </button>
+                        </h2>
+                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Priority routing ensures immediate notification. Average initial review by municipal officials takes 24-48 hours depending on issue severity.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                Can I attach photos to my report?
+                            </button>
+                        </h2>
+                        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Yes, clicking "Report Issue" allows you to seamlessly attach image evidence of the civic problem, which is vital for quick verification.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
 <!-- Floating Bottom Left Badges -->
 <div class="floating-bot-left">
-    <a href="#" class="bot-btn-bs">
-        <i data-lucide="shield-check" style="width: 18px;"></i> L.S.G.D Anti-Corruption Cell
+    <a href="#" class="bot-btn-light">
+        <i data-lucide="shield-check" style="color: #16a34a; width: 18px;"></i> L.S.G.D Anti-Corruption
     </a>
-    <a href="#" class="bot-btn-bs">
-        <i data-lucide="help-circle" style="width: 18px;"></i> Official Helpdesk
+    <a href="#" class="bot-btn-light">
+        <i data-lucide="help-circle" style="color: #2563eb; width: 18px;"></i> Official Helpdesk
     </a>
 </div>
 
@@ -350,9 +343,9 @@
             const dashLink = document.getElementById('dash-link');
             if (dashLink) {
                 dashLink.href = dashUrl;
-                dashLink.innerHTML = "Enter Dashboard";
-                dashLink.classList.remove('btn-action-outline');
-                dashLink.classList.add('btn-action-primary');
+                dashLink.innerHTML = "ENTER DASHBOARD";
+                dashLink.classList.remove('btn-outline-primary');
+                dashLink.classList.add('btn-primary');
             }
         }
     });
