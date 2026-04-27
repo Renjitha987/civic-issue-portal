@@ -138,6 +138,9 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Custom User Model
 AUTH_USER_MODEL = 'users.User'
 
+# Global Login URL for Redirects
+LOGIN_URL = 'login_page'
+
 # Django REST Framework Settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (

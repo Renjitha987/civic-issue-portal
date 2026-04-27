@@ -21,6 +21,7 @@ class User(AbstractUser):
     address = models.TextField(blank=True, null=True)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='CITIZEN')
     ward = models.ForeignKey('wards.Ward', on_delete=models.SET_NULL, null=True, blank=True, related_name='ward_users')
+    panchayat = models.ForeignKey('wards.Panchayat', on_delete=models.SET_NULL, null=True, blank=True, related_name='panchayat_users')
     is_blocked = models.BooleanField(default=False)
     
     def __str__(self):

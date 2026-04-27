@@ -1,0 +1,134 @@
+{% extends 'frontend/base.html' %}
+
+{% block title %}Advanced Ticket Management | Civic Portal{% endblock %}
+
+{% block content %}
+<style>
+    .advanced-table tr:hover {
+        background: rgba(255, 255, 255, 0.03);
+        cursor: pointer;
+    }
+    .filter-card {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+        border: 1px solid var(--border);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        backdrop-filter: blur(10px);
+    }
+</style>
+
+<div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 2.5rem;">
+    <div style="display: flex; align-items: center; gap: 1rem;">
+        <div style="width: 12px; height: 12px; background: var(--primary); border-radius: 50%; box-shadow: 0 0 15px var(--primary);"></div>
+        <h2 style="font-size: 2rem; font-weight: 800; letter-spacing: -0.5px;">System Intelligence Board</h2>
+    </div>
+    <p style="color: var(--text-muted); font-size: 1.1rem; padding-left: 1.75rem;">Optimized backend grouping: <span style="color: var(--primary-light);">Forwarded</span> &rarr; Pending &rarr; Resolved</p>
+</div>
+
+<div class="filter-card">
+    <div style="display: flex; gap: 2rem;">
+        <div style="display: flex; flex-direction: column;">
+            <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; margin-bottom: 0.5rem;">Total Records</span>
+            <span style="font-size: 1.5rem; font-weight: 800; color: white;">{{ tickets|length }} <span style="font-size: 0.9rem; font-weight: 400; color: var(--text-muted);">Tickets</span></span>
+        </div>
+        <div style="border-left: 1px solid var(--border); padding-left: 2rem; display: flex; flex-direction: column;">
+            <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; margin-bottom: 0.5rem;">Current View</span>
+            <span style="font-size: 1.5rem; font-weight: 800; color: var(--primary-light);">{{ selected_category }}</span>
+        </div>
+    </div>
+
+    <form method="get" id="filter-form" style="display: flex; align-items: center; gap: 1rem;">
+        <label for="category-filter" style="font-weight: 600; color: var(--text-muted);">Issue Domain:</label>
+        <select name="category" id="category-filter" class="form-control" onchange="this.form.submit()" style="min-width: 200px; height: 45px; border-radius: 0.75rem;">
+            <option value="All" {% if selected_category == 'All' %}selected{% endif %}>All Domains</option>
+            {% for cat in categories %}
+                <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
+            {% endfor %}
+        </select>
+    </form>
+</div>
+
+<div class="glass-card" style="padding: 0; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);">
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;" class="advanced-table">
+            <thead>
+                <tr style="border-bottom: 1px solid var(--border);">
+                    <th style="padding: 1.5rem; color: var(--text-muted); font-weight: 600; font-size: 0.85rem;">IDENTIFIER</th>
+                    <th style="padding: 1.5rem; color: var(--text-muted); font-weight: 600; font-size: 0.85rem;">LIFECYCLE STATUS</th>
+                    <th style="padding: 1.5rem; color: var(--text-muted); font-weight: 600; font-size: 0.85rem;">CITIZEN ORIGIN</th>
+                    <th style="padding: 1.5rem; color: var(--text-muted); font-weight: 600; font-size: 0.85rem;">SUBMISSION LOG</th>
+                    <th style="padding: 1.5rem; color: var(--text-muted); font-weight: 600; font-size: 0.85rem; text-align: right;">OPERATIONS</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ticket in tickets %}
+                <tr style="border-bottom: 1px solid var(--border);">
+                    <td style="padding: 1.5rem;">
+                        <span style="font-family: monospace; background: rgba(255,255,255,0.05); padding: 0.4rem 0.8rem; border-radius: 0.5rem; border: 1px solid var(--border); color: var(--primary-light);">
+                            #{{ ticket.id }}
+                        </span>
+                    </td>
+                    <td style="padding: 1.5rem;">
+                        <span class="status-badge status-{{ ticket.status|cut:' ' }}">
+                            {{ ticket.status }}
+                        </span>
+                    </td>
+                    <td style="padding: 1.5rem;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--primary-light)); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.8rem;">
+                                {{ ticket.citizen.full_name|slice:":1" }}
+                            </div>
+                            <div style="display: flex; flex-direction: column;">
+                                <span style="font-weight: 600;">{{ ticket.citizen.full_name }}</span>
+                                <span style="font-size: 0.75rem; color: var(--text-muted);">WARD: {{ ticket.ward.ward_name }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="padding: 1.5rem;">
+                        <div style="display: flex; flex-direction: column;">
+                            <span style="font-weight: 500;">{{ ticket.date_submitted|date:"D, d M Y" }}</span>
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">{{ ticket.date_submitted|time:"H:i" }} IST</span>
+                        </div>
+                    </td>
+                    <td style="padding: 1.5rem; text-align: right;">
+                        <a href="/complaint/track/?id={{ ticket.id }}" class="btn" style="padding: 0.5rem 1.25rem; font-size: 0.85rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border); font-weight: 600;">
+                            Audit Trail
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr style="background: transparent !important;">
+                    <td colspan="5" style="padding: 5rem 2rem; text-align: center;">
+                        <div style="background: rgba(255,255,255,0.02); display: inline-block; padding: 2rem; border-radius: 2rem; border: 1px solid var(--border);">
+                            <div style="font-size: 3rem; margin-bottom: 1.5rem; filter: grayscale(1);">🕸️</div>
+                            <h3 style="margin-bottom: 0.5rem;">Zero results found</h3>
+                            <p style="color: var(--text-muted);">No complaints match the current filter criteria.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if is_paginated %}
+<div style="display: flex; justify-content: center; align-items: center; margin-top: 3rem; gap: 1rem;">
+    {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}&category={{ selected_category }}" class="btn btn-primary" style="padding: 0.6rem 1.2rem;">&laquo; Previous</a>
+    {% endif %}
+    
+    <div style="padding: 0.6rem 2rem; background: var(--surface-color); border: 1px solid var(--border); border-radius: 2rem; font-weight: 600; font-size: 0.9rem;">
+        PAGE {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+    </div>
+
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}&category={{ selected_category }}" class="btn btn-primary" style="padding: 0.6rem 1.2rem;">Next &raquo;</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

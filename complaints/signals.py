@@ -18,6 +18,12 @@ def log_complaint_creation(sender, instance, created, **kwargs):
                 receiver=instance.assigned_to,
                 message=f'New complaint {instance.id} assigned to you.'
             )
+        if instance.department and instance.department.head:
+            Notification.objects.create(
+                sender=instance.citizen,
+                receiver=instance.department.head,
+                message=f'New complaint {instance.id} reported to your department.'
+            )
 
 @receiver(post_save, sender=ComplaintForwarding)
 def notify_on_forward(sender, instance, created, **kwargs):

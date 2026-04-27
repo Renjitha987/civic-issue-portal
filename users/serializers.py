@@ -7,7 +7,7 @@ User = get_user_model()
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'full_name', 'phone_number', 'role', 'ward', 'is_blocked', 'date_joined']
+        fields = ['id', 'username', 'email', 'full_name', 'phone_number', 'role', 'ward', 'panchayat', 'is_blocked', 'date_joined']
         read_only_fields = ['id', 'role', 'date_joined']
 
 class CitizenProfileSerializer(serializers.ModelSerializer):
@@ -28,7 +28,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'full_name', 'phone_number', 'password', 'role', 'ward', 'aadhaar_id', 'address']
+        fields = ['username', 'email', 'full_name', 'phone_number', 'password', 'role', 'ward', 'panchayat', 'aadhaar_id', 'address']
 
     def validate_password(self, value):
         if not any(char.isdigit() for char in value):

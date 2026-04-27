@@ -4,8 +4,9 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, login, authenticate
 from django.shortcuts import get_object_or_404
+
 from .serializers import RegisterSerializer, UserSerializer
 from .permissions import IsAdminUser, IsWardMember
 
@@ -41,6 +42,19 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        if response.status_code == status.HTTP_200_OK:
+            # Established session for web-based SSR views
+            user = authenticate(
+                username=request.data.get('username'),
+                password=request.data.get('password')
+            )
+            if user:
+                login(request, user)
+        return response
+
+
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = [AllowAny]
@@ -74,3 +88,10 @@ class BlockUserView(APIView):
         
         state = "blocked" if target_user.is_blocked else "unblocked"
         return Response({'message': f'User perfectly {state}.'})
+
+class DepartmentHeadListView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    serializer_class = UserSerializer
+
+    def get_queryset(self):
+        return User.objects.filter(role='DEPARTMENT_HEAD')

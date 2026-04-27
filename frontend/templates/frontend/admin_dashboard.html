@@ -1,182 +1,665 @@
 {% extends 'frontend/base.html' %}
 
-{% block title %}Central Admin Dashboard | Civic Issue Portal{% endblock %}
+{% block title %}Admin Control Center | Civic Issue Portal{% endblock %}
 
 {% block content %}
 <style>
-    .tab-btn {
-        padding: 0.8rem 1.5rem;
-        background: transparent;
+    body {
+        overflow-x: hidden;
+    }
+    .dashboard-layout {
+        display: flex;
+        min-height: calc(100vh - 65px);
+        margin-left: -1.5rem;
+        margin-right: -1.5rem;
+    }
+
+    /* Sidebar */
+    .sidebar {
+        width: var(--sidebar-width);
+        background: rgba(11, 15, 26, 0.4);
+        border-right: 1px solid var(--border);
+        padding: 1.5rem 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        flex-shrink: 0;
+        position: sticky;
+        top: 65px;
+        height: calc(100vh - 65px);
+    }
+
+    .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.85rem 1rem;
+        border-radius: 0.75rem;
         color: var(--text-muted);
-        border: none;
-        border-bottom: 2px solid transparent;
+        text-decoration: none;
+        font-size: 0.95rem;
+        font-weight: 500;
+        transition: all 0.2s;
         cursor: pointer;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        font-size: 1.05rem;
+        border: 1px solid transparent;
     }
-    .tab-btn:hover {
-        color: white;
+
+    .nav-item:hover {
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--text-color);
     }
-    .tab-btn.active {
+
+    .nav-item.active {
+        background: rgba(99, 102, 241, 0.1);
         color: var(--primary-light);
-        border-bottom: 2px solid var(--primary);
+        border-color: rgba(99, 102, 241, 0.2);
     }
-    .tab-content {
-        display: none;
-        animation: fadeIn 0.4s ease forwards;
+
+    /* Main Content */
+    .main-content {
+        flex: 1;
+        padding: 2rem;
+        overflow-y: auto;
     }
-    .tab-content.active {
-        display: block;
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
     }
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(5px); }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .stat-card {
+        padding: 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-card .icon-box {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+    }
+
+    /* Board View */
+    .kanban-board {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+        align-items: start;
+    }
+
+    .kanban-column {
+        background: rgba(15, 23, 42, 0.3);
+        border: 1px solid var(--border);
+        border-radius: 1.25rem;
+        padding: 1.25rem;
+        min-height: 600px;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .column-title {
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text-muted);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .ticket-card {
+        background: var(--surface-color);
+        border: 1px solid var(--border);
+        border-radius: 1rem;
+        padding: 1.25rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .ticket-card:hover {
+        border-color: var(--primary-light);
+        background: var(--surface-hover);
+        transform: translateY(-2px);
+    }
+
+    .ticket-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-bottom: 0.75rem;
+    }
+
+    .category-pill {
+        display: inline-block;
+        padding: 0.2rem 0.6rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: var(--primary-light);
+    }
+
+    /* Utils */
+    .tab-section { display: none; animation: slideUp 0.4s ease-out; }
+    .tab-section.active { display: block; }
+
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
     }
+
+    .filter-bar {
+        display: flex;
+        gap: 0.5rem;
+        background: rgba(0, 0, 0, 0.2);
+        padding: 0.35rem;
+        border-radius: 0.75rem;
+        border: 1px solid var(--border);
+        margin-bottom: 1.5rem;
+    }
+
+    .filter-btn {
+        padding: 0.5rem 1.25rem;
+        border-radius: 0.5rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .filter-btn:hover { color: var(--text-color); }
+    .filter-btn.active {
+        background: var(--primary);
+        color: white;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    /* Tables */
+    .data-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 0.5rem;
+    }
+
+    .data-table th {
+        padding: 1rem;
+        text-align: left;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        font-weight: 600;
+    }
+
+    .data-table td {
+        padding: 1.25rem 1rem;
+        background: rgba(255, 255, 255, 0.02);
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+    }
+
+    .data-table tr td:first-child { border-left: 1px solid var(--border); border-radius: 0.75rem 0 0 0.75rem; }
+    .data-table tr td:last-child { border-right: 1px solid var(--border); border-radius: 0 0.75rem 0.75rem 0; }
 </style>
 
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-    <h2>Central Governance Interface</h2>
-    <span style="color: var(--danger); font-weight: 800; border: 1px solid var(--danger); padding: 0.3rem 0.8rem; border-radius: 99px; font-size: 0.85rem;">System Administrator</span>
-</div>
-
-<!-- Tabs Navbar -->
-<div style="display: flex; gap: 0.5rem; border-bottom: 1px solid var(--border); margin-bottom: 2rem;">
-    <button class="tab-btn active" onclick="switchTab('overview', this)">System Overview</button>
-    <button class="tab-btn" onclick="switchTab('wards', this)">Wards & Officials</button>
-    <button class="tab-btn" onclick="switchTab('departments', this)">Departments</button>
-</div>
-
-<!-- TAB 1: OVERVIEW -->
-<div id="tab-overview" class="tab-content active">
-    <!-- Stats -->
-    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
-        <div class="glass-card" style="text-align: center; padding: 1.5rem;">
-            <h3 style="color: var(--text-muted); font-size: 1rem;">Total Issues</h3>
-            <p id="stat-total" style="font-size: 2.5rem; font-weight: 800; color: white;">0</p>
-        </div>
-        <div class="glass-card" style="text-align: center; padding: 1.5rem;">
-            <h3 style="color: var(--warning); font-size: 1rem;">Pending / Progress</h3>
-            <p id="stat-pending" style="font-size: 2.5rem; font-weight: 800; color: var(--warning);">0</p>
-        </div>
-        <div class="glass-card" style="text-align: center; padding: 1.5rem;">
-            <h3 style="color: var(--danger); font-size: 1rem;">Escalated Tickets</h3>
-            <p id="stat-escalated" style="font-size: 2.5rem; font-weight: 800; color: var(--danger);">0</p>
-        </div>
-    </div>
-
-    <!-- Report Download Controls -->
-    <div class="glass-card" style="margin-bottom: 2rem; display: flex; gap: 1rem; align-items: center; justify-content: center; padding: 1.5rem;">
-        <h4 style="margin: 0; color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Weekly Intelligence Reports:</h4>
-        <button class="btn btn-primary" onclick="downloadReport('csv')" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none;">
-             <span style="margin-right: 0.5rem;">📥</span> Download CSV
-        </button>
-        <button class="btn btn-primary" onclick="downloadReport('pdf')" style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); border: none;">
-             <span style="margin-right: 0.5rem;">📥</span> Download PDF
-        </button>
-    </div>
-
-    <!-- Tickets Table -->
-    <div class="glass-card" style="margin-bottom: 2rem;">
-        <h3 style="margin-bottom: 1rem;">All System Tickets</h3>
-        <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse; text-align: left;">
-                <thead>
-                    <tr style="border-bottom: 1px solid var(--border);">
-                        <th style="padding: 1rem; color: var(--text-muted);">ID</th>
-                        <th style="padding: 1rem; color: var(--text-muted);">Citizen</th>
-                        <th style="padding: 1rem; color: var(--text-muted);">Category</th>
-                        <th style="padding: 1rem; color: var(--text-muted);">Status</th>
-                        <th style="padding: 1rem; color: var(--text-muted);">Priority</th>
-                        <th style="padding: 1rem; color: var(--text-muted);">Image</th>
-                        <th style="padding: 1rem; color: var(--text-muted);">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="admin-complaints">
-                    <tr><td colspan="6" style="text-align:center; padding: 2rem;">Loading...</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-
-<!-- TAB 2: WARDS -->
-<div id="tab-wards" class="tab-content">
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-        <!-- Wards List -->
-        <div class="glass-card">
-            <h3 style="margin-bottom: 1rem;">Active Wards</h3>
-            <ul id="wards-list" style="list-style: none; display: flex; flex-direction: column; gap: 0.5rem;">
-                <li style="color: var(--text-muted);">Loading...</li>
-            </ul>
-            
-            <div id="new-ward-form" style="margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
-                <h4>Add New Ward</h4>
-                <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-                    <input type="text" id="new-ward-name" class="form-control" placeholder="Ward Name">
-                    <button class="btn btn-primary" onclick="createWard()">Create</button>
+<div class="dashboard-layout">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div style="padding: 0 0.5rem 1.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <div style="width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, var(--primary), #a855f7); display: flex; align-items: center; justify-content: center;">
+                    <i data-lucide="shield-check" style="color: white; width: 20px;"></i>
                 </div>
-            </div>
-
-            <div id="reg-ward-member-form" style="margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
-                <h4>Register Ward Member</h4>
-                <p style="color:var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">Assign an official to manage a specific ward.</p>
-                <div style="display: flex; flex-direction: column; gap: 0.8rem;">
-                    <input type="text" id="wm-username" class="form-control" placeholder="Username" required>
-                    <input type="text" id="wm-fullname" class="form-control" placeholder="Full Name" required>
-                    <input type="email" id="wm-email" class="form-control" placeholder="Email Address">
-                    <input type="text" id="wm-phone" class="form-control" placeholder="Phone Number (10 digits)" maxlength="10" required>
-                    <input type="password" id="wm-password" class="form-control" placeholder="Password" required>
-                    <select id="wm-ward" class="form-control" required>
-                        <option value="">Select Ward...</option>
-                    </select>
-                    <button class="btn btn-primary" onclick="registerWardMember()" id="btn-reg-wm">Register</button>
-                    <p id="wm-error" style="color: var(--danger); font-size: 0.85rem; display: none;"></p>
-                    <p id="wm-success" style="color: var(--success); font-size: 0.85rem; display: none;"></p>
+                <div>
+                    <h5 style="margin: 0; font-size: 0.95rem;">Admin Node</h5>
+                    <p style="margin:0; font-size: 0.7rem; color: var(--success); font-weight: 700;">SYSTEM ACTIVE</p>
                 </div>
             </div>
         </div>
 
-        <!-- Citizen Block Management -->
-        <div class="glass-card">
-            <h3 style="margin-bottom: 1rem;">Citizen Blocking Control</h3>
-            <p style="color:var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">Enter a Citizen's User ID to toggle their portal access block state in this jurisdiction.</p>
-            
-            <div style="display: flex; gap: 0.5rem;">
-                <input type="number" id="block-user-id" class="form-control" placeholder="User ID (e.g., 5)">
-                <button class="btn btn-danger" onclick="toggleBlock()">Toggle Block</button>
+        <a class="nav-item active" onclick="switchSection('overview', this)">
+            <i data-lucide="layout-dashboard" style="width: 18px;"></i>
+            Overview
+        </a>
+        <a class="nav-item" onclick="switchSection('wards', this)">
+            <i data-lucide="map-pin" style="width: 18px;"></i>
+            Wards & Officials
+        </a>
+        <a class="nav-item" onclick="switchSection('departments', this)">
+            <i data-lucide="building-2" style="width: 18px;"></i>
+            Departments
+        </a>
+        <div style="margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--border);">
+            <a class="nav-item" onclick="logout()">
+                <i data-lucide="log-out" style="width: 18px;"></i>
+                Sign Out
+            </a>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <!-- SECTION: OVERVIEW -->
+        <div id="section-overview" class="tab-section active">
+            <div class="section-header">
+                <div>
+                    <h2 style="font-weight: 800; font-size: 1.75rem;">System Intelligence</h2>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Real-time governance overview and issue tracking.</p>
+                </div>
+                <div style="display: flex; gap: 0.75rem;">
+                    <button class="btn btn-primary" onclick="downloadReport('pdf')" style="background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2); box-shadow: none;">
+                        <i data-lucide="file-text" style="width: 18px;"></i> PDF Report
+                    </button>
+                    <button class="btn btn-primary" onclick="downloadReport('csv')" style="background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.2); box-shadow: none;">
+                        <i data-lucide="download" style="width: 18px;"></i> CSV Data
+                    </button>
+                </div>
             </div>
-            <p id="block-result" style="margin-top: 1rem; font-weight: 600; font-size: 0.9rem;"></p>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="glass-card stat-card">
+                    <div class="icon-box" style="background: rgba(99, 102, 241, 0.1); color: var(--primary-light);">
+                        <i data-lucide="activity" style="width: 24px;"></i>
+                    </div>
+                    <h3 style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600; text-transform: uppercase;">Total Issues</h3>
+                    <p style="font-size: 2rem; font-weight: 800; margin-top: 0.25rem;">{{ stats.total }}</p>
+                </div>
+                <div class="glass-card stat-card">
+                    <div class="icon-box" style="background: rgba(245, 158, 11, 0.1); color: var(--warning);">
+                        <i data-lucide="clock" style="width: 24px;"></i>
+                    </div>
+                    <h3 style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600; text-transform: uppercase;">Active Tickets</h3>
+                    <p style="font-size: 2rem; font-weight: 800; margin-top: 0.25rem; color: var(--warning);">{{ stats.pending }}</p>
+                </div>
+                <div class="glass-card stat-card">
+                    <div class="icon-box" style="background: rgba(239, 68, 68, 0.1); color: var(--danger);">
+                        <i data-lucide="alert-circle" style="width: 24px;"></i>
+                    </div>
+                    <h3 style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600; text-transform: uppercase;">Escalated</h3>
+                    <p style="font-size: 2rem; font-weight: 800; margin-top: 0.25rem; color: var(--danger);">{{ stats.escalated }}</p>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem;">
+                <h4 style="font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i data-lucide="columns-3" style="width: 20px; color: var(--primary-light);"></i>
+                    Board View
+                </h4>
+                <div class="filter-bar">
+                    <a href="?category=All" class="filter-btn {% if selected_category == 'All' %}active{% endif %}">All</a>
+                    {% for cat in categories %}
+                        <a href="?category={{ cat }}" class="filter-btn {% if selected_category == cat %}active{% endif %}">{{ cat }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Kanban -->
+            <div class="kanban-board">
+                <!-- Forwarded -->
+                <div class="kanban-column">
+                    <div class="column-title">
+                        <span style="width: 8px; height: 8px; background: var(--primary-light); border-radius: 50%;"></span>
+                        Forwarded ({{ forwarded_complaints.count }})
+                    </div>
+                    {% for c in forwarded_complaints %}
+                        <div class="ticket-card" onclick="location.href='/complaint/track/?id={{ c.id }}'">
+                            <div class="ticket-meta">
+                                <span>#{{ c.id }}</span>
+                                <span>{{ c.date_submitted|date:"M d" }}</span>
+                            </div>
+                            <h5 style="margin: 0.5rem 0; font-size: 1rem; font-weight: 700;">{{ c.issue_category }}</h5>
+                            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.3rem;">
+                                <i data-lucide="map-pin" style="width: 12px; color: var(--primary-light);"></i>
+                                {{ c.ward.ward_name }} 
+                                <span style="opacity: 0.5;">•</span> 
+                                {{ c.ward.panchayat.name|default:"Unassigned" }}
+                            </p>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span class="category-pill">{{ c.priority_level }}</span>
+                                <i data-lucide="arrow-right" style="width: 14px; color: var(--text-muted);"></i>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div style="padding: 2rem; text-align: center; opacity: 0.4;">
+                            <i data-lucide="inbox" style="width: 32px; margin-bottom: 1rem;"></i>
+                            <p style="font-size: 0.8rem; font-weight: 600;">Clear</p>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Pending -->
+                <div class="kanban-column">
+                    <div class="column-title">
+                        <span style="width: 8px; height: 8px; background: var(--warning); border-radius: 50%;"></span>
+                        Processing ({{ pending_complaints.count }})
+                    </div>
+                    {% for c in pending_complaints %}
+                        <div class="ticket-card" onclick="location.href='/complaint/track/?id={{ c.id }}'">
+                            <div class="ticket-meta">
+                                <span style="color: var(--warning);">#{{ c.id }}</span>
+                                <span>{{ c.date_submitted|date:"M d" }}</span>
+                            </div>
+                            <h5 style="margin: 0.5rem 0; font-size: 1rem; font-weight: 700;">{{ c.issue_category }}</h5>
+                            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.3rem;">
+                                <i data-lucide="map-pin" style="width: 12px; color: var(--primary-light);"></i>
+                                {{ c.ward.ward_name }} 
+                                <span style="opacity: 0.5;">•</span> 
+                                {{ c.ward.panchayat.name|default:"Unassigned" }}
+                            </p>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span class="category-pill" style="background: rgba(245, 158, 11, 0.05); color: var(--warning);">{{ c.priority_level }}</span>
+                                <i data-lucide="arrow-right" style="width: 14px; color: var(--text-muted);"></i>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Resolved -->
+                <div class="kanban-column">
+                    <div class="column-title">
+                        <span style="width: 8px; height: 8px; background: var(--success); border-radius: 50%;"></span>
+                        Resolved ({{ resolved_complaints.count }})
+                    </div>
+                    {% for c in resolved_complaints %}
+                        <div class="ticket-card" onclick="location.href='/complaint/track/?id={{ c.id }}'">
+                            <div class="ticket-meta">
+                                <span style="color: var(--success);">#{{ c.id }}</span>
+                                <span>{{ c.date_submitted|date:"M d" }}</span>
+                            </div>
+                            <h5 style="margin: 0.5rem 0; font-size: 1rem; font-weight: 700;">{{ c.issue_category }}</h5>
+                            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.3rem;">
+                                <i data-lucide="map-pin" style="width: 12px; color: var(--primary-light);"></i>
+                                {{ c.ward.ward_name }} 
+                                <span style="opacity: 0.5;">•</span> 
+                                {{ c.ward.panchayat.name|default:"Unassigned" }}
+                            </p>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <i data-lucide="check-circle-2" style="width: 16px; color: var(--success);"></i>
+                                <span style="font-size: 0.75rem; color: var(--success); font-weight: 700;">COMPLETED</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: WARDS -->
+        <div id="section-wards" class="tab-section">
+            <div class="section-header">
+                <div>
+                    <h2 style="font-weight: 800; font-size: 1.75rem;">Jurisdiction Management</h2>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Manage panchayats, wards, officials, and access control.</p>
+                </div>
+            </div>
+
+            <!-- Top Row: Panchayat Table + Access Control -->
+            <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <!-- Panchayat Management Table -->
+                <div class="glass-card" style="padding: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(99,102,241,0.15); display: flex; align-items: center; justify-content: center;">
+                                <i data-lucide="map-pin" style="width: 16px; color: var(--primary-light);"></i>
+                            </div>
+                            <h4 style="font-weight: 700; margin: 0;">Panchayats</h4>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="text" id="new-panchayat-name" class="form-control" placeholder="New panchayat name..." style="width: 180px; padding: 0.4rem 0.75rem; font-size: 0.85rem;">
+                            <button class="btn btn-primary" onclick="createPanchayat()" style="padding: 0.4rem 0.9rem; font-size: 0.85rem;">
+                                <i data-lucide="plus" style="width: 15px;"></i> Add
+                            </button>
+                        </div>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Panchayat Name</th>
+                                <th>Wards</th>
+                                <th style="text-align:right; padding-right:1rem;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="panchayats-table-body">
+                            <tr><td colspan="4" style="text-align:center; color: var(--text-muted); padding: 2rem;">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Access Control -->
+                <div class="glass-card" style="border-color: rgba(239, 68, 68, 0.2); padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                        <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(239,68,68,0.12); display: flex; align-items: center; justify-content: center;">
+                            <i data-lucide="shield-off" style="width: 16px; color: var(--danger);"></i>
+                        </div>
+                        <div>
+                            <h4 style="font-weight: 700; color: var(--danger); margin: 0; font-size: 1rem;">Access Control</h4>
+                            <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Block or restore citizen access.</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="number" id="block-user-id" class="form-control" placeholder="Enter Citizen ID">
+                        <button class="btn btn-danger" onclick="toggleBlock()" style="white-space: nowrap;">Toggle Access</button>
+                    </div>
+                    <p id="block-result" style="font-size: 0.85rem; font-weight: 600; margin: 0;"></p>
+                </div>
+            </div>
+
+            <!-- Wards Table with Panchayat -->
+            <div class="glass-card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(16,185,129,0.12); display: flex; align-items: center; justify-content: center;">
+                            <i data-lucide="map" style="width: 16px; color: var(--success);"></i>
+                        </div>
+                        <h4 style="font-weight: 700; margin: 0;">Wards & Panchayats</h4>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" id="new-ward-name" class="form-control" placeholder="New ward name..." style="width: 180px; padding: 0.4rem 0.75rem; font-size: 0.85rem;">
+                        <button class="btn btn-primary" onclick="createWard()" style="padding: 0.4rem 0.9rem; font-size: 0.85rem;">
+                            <i data-lucide="plus" style="width: 15px;"></i> Add Ward
+                        </button>
+                    </div>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Ward Name</th>
+                            <th>Panchayat</th>
+                            <th style="text-align:right; padding-right:1rem;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="wards-table-body">
+                        <tr><td colspan="4" style="text-align:center; color: var(--text-muted); padding: 2rem;">Loading...</td></tr>
+                    </tbody>
+                </table>
+                <!-- Hidden legacy container kept for JS compat -->
+                <div id="wards-list-container" style="display:none;"></div>
+                <div id="panchayats-list-container" style="display:none;"></div>
+            </div>
+
+            <!-- Register New Ward Official -->
+            <div class="glass-card" style="padding: 1.5rem;">
+                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+                    <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(99,102,241,0.12); display: flex; align-items: center; justify-content: center;">
+                        <i data-lucide="user-plus" style="width: 16px; color: var(--primary-light);"></i>
+                    </div>
+                    <h4 style="font-weight: 700; margin: 0;">Register New Ward Official</h4>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem;">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="wm-username" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="wm-fullname" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Role</label>
+                        <select id="wm-role" class="form-control" onchange="toggleWardField(this.value)">
+                            <option value="WARD_MEMBER">Ward Official</option>
+                            <option value="DEPARTMENT_HEAD">Department Head</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="ward-select-box">
+                        <label>Assigned Ward</label>
+                        <select id="wm-ward" class="form-control">
+                            <option value="">Select a ward...</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="panchayat-select-box">
+                        <label>Assigned Panchayat</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <select id="wm-panchayat" class="form-control">
+                                <option value="">Select a panchayat...</option>
+                            </select>
+                            <button class="btn btn-primary" onclick="document.getElementById('new-panchayat-modal').style.display='flex'" style="padding: 0.5rem 1rem;" title="Add new panchayat">
+                                <i data-lucide="plus" style="width: 18px;"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="wm-email" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="text" id="wm-phone" class="form-control" maxlength="10">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="wm-password" class="form-control">
+                    </div>
+                </div>
+                <div style="margin-top: 1.5rem; display: flex; align-items: center; gap: 1.5rem;">
+                    <button class="btn btn-primary" onclick="registerWardMember()" id="btn-reg-wm" style="min-width: 200px;">
+                        <i data-lucide="user-check" style="width: 16px;"></i> Register Official
+                    </button>
+                    <p id="wm-error" style="color: var(--danger); font-size: 0.85rem; margin: 0;"></p>
+                    <p id="wm-success" style="color: var(--success); font-size: 0.85rem; margin: 0;"></p>
+                </div>
+            </div>
+
+
+        </div>
+
+
+        <!-- SECTION: DEPARTMENTS -->
+        <div id="section-departments" class="tab-section">
+            <div class="section-header">
+                <div>
+                    <h2 style="font-weight: 800; font-size: 1.75rem;">Departmental Nodes</h2>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Manage service departments and assigned heads.</p>
+                </div>
+                <button class="btn btn-primary" onclick="document.getElementById('new-dept-modal').scrollIntoView({behavior: 'smooth'})">
+                    <i data-lucide="plus" style="width: 18px;"></i> New Department
+                </button>
+            </div>
+
+            <div class="glass-card">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Department Name</th>
+                            <th>Description</th>
+                            <th>Assigned Head</th>
+                            <th style="padding-right: 1.5rem; text-align: right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="depts-list-body">
+                        <!-- JS Loaded -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Head Assignment Modal -->
+            <div id="head-modal" style="display:none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(8px);">
+                <div class="glass-card" style="width: 100%; max-width: 400px;">
+                    <h3 style="margin-bottom: 1.5rem;">Assign Department Head</h3>
+                    <input type="hidden" id="active-dept-id">
+                    <div class="form-group">
+                        <label>Select Official</label>
+                        <select id="head-select" class="form-control">
+                            <option value="">Loading...</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                        <button class="btn btn-primary" style="flex: 1" onclick="assignHead()">Save Changes</button>
+                        <button class="btn" style="flex: 1; background: var(--border);" onclick="closeHeadModal()">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="new-dept-modal" class="glass-card" style="margin-top: 2rem; max-width: 800px;">
+                <h4 style="font-weight: 700; margin-bottom: 1.5rem;">Create New Department</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div class="form-group">
+                        <label>Dept Name</label>
+                        <input type="text" id="new-dept-name" class="form-control" placeholder="e.g. Health & Sanitation">
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <input type="text" id="new-dept-desc" class="form-control" placeholder="Brief service scope">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="createDept()" style="margin-top: 1.5rem; min-width: 180px;">
+                    Initialize Dept
+                </button>
+            </div>
         </div>
     </div>
 </div>
 
+<!-- Global Modals -->
+<!-- New Panchayat Modal -->
+<div id="new-panchayat-modal" style="display:none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(8px);">
+    <div class="glass-card" style="width: 100%; max-width: 400px;">
+        <h3 style="margin-bottom: 1.5rem;">Create New Panchayat</h3>
+        <div class="form-group">
+            <label>Panchayat Name</label>
+            <input type="text" id="modal-new-panchayat-name" class="form-control" placeholder="e.g. Gram Panchayat A">
+        </div>
+        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+            <button class="btn btn-primary" style="flex: 1" onclick="createPanchayatFromModal()">Save Changes</button>
+            <button class="btn" style="flex: 1; background: var(--border);" onclick="document.getElementById('new-panchayat-modal').style.display='none'">Cancel</button>
+        </div>
+    </div>
+</div>
 
-<!-- TAB 3: DEPARTMENTS -->
-<div id="tab-departments" class="tab-content">
-    <div class="glass-card">
-        <h3 style="margin-bottom: 1rem;">Active Departments</h3>
-        <table style="width: 100%; border-collapse: collapse; text-align: left; margin-bottom: 2rem;">
-            <thead>
-                <tr style="border-bottom: 1px solid var(--border);">
-                    <th style="padding: 1rem; color: var(--text-muted);">Department Name</th>
-                    <th style="padding: 1rem; color: var(--text-muted);">Description</th>
-                    <th style="padding: 1rem; color: var(--text-muted);">Assigned Head</th>
-                </tr>
-            </thead>
-            <tbody id="depts-list">
-                <tr><td colspan="3" style="text-align:center; padding: 2rem; color: var(--text-muted);">Loading Departments...</td></tr>
-            </tbody>
-        </table>
-        
-        <div id="new-dept-form" style="border-top: 1px solid var(--border); padding-top: 1.5rem;">
-            <h4 style="margin-bottom: 1rem;">Create New Department</h4>
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
-                <input type="text" id="new-dept-name" class="form-control" placeholder="Department Name (e.g. Roads)">
-                <input type="text" id="new-dept-desc" class="form-control" placeholder="Brief Description">
-                <button class="btn btn-primary" onclick="createDept()" style="padding: 0.75rem;">Create Department</button>
-            </div>
+<!-- Assign Panchayat to Ward Modal -->
+<div id="assign-panchayat-modal" style="display:none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(8px);">
+    <div class="glass-card" style="width: 100%; max-width: 400px;">
+        <h3 style="margin-bottom: 0.5rem;">Link Ward to Panchayat</h3>
+        <p id="assign-ward-label" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;"></p>
+        <input type="hidden" id="assign-ward-id">
+        <div class="form-group">
+            <label>Select Panchayat</label>
+            <select id="assign-panchayat-select" class="form-control">
+                <option value="">-- No Panchayat --</option>
+            </select>
+        </div>
+        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+            <button class="btn btn-primary" style="flex: 1" onclick="savePanchayatAssignment()">Save</button>
+            <button class="btn" style="flex: 1; background: var(--border);" onclick="document.getElementById('assign-panchayat-modal').style.display='none'">Cancel</button>
         </div>
     </div>
 </div>
@@ -185,263 +668,432 @@
 
 {% block scripts %}
 <script>
-// --- UI Interactivity ---
-function switchTab(tabId, btn) {
-    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-    document.getElementById('tab-' + tabId).classList.add('active');
-    btn.classList.add('active');
-}
-
-document.addEventListener('DOMContentLoaded', async () => {
-    if(localStorage.getItem('user_role') !== 'ADMIN') {
-        window.location.href = "{% url 'home' %}";
-        return;
-    }
-
-    // 1. Fetch All Complaints (Paginated)
-    let allComplaints = [];
-    let nextPage = '/complaints/';
-    while(nextPage) {
-        const { data: pageData } = await fetchAPI(nextPage);
-        if(pageData && pageData.results) {
-            allComplaints.push(...pageData.results);
-            // Extract just the endpoint path from full URL (e.g., '/complaints/?page=2')
-            nextPage = pageData.next ? pageData.next.replace(window.location.origin + '/api', '') : null;
-        } else if(pageData && Array.isArray(pageData)) {
-            allComplaints.push(...pageData);
-            nextPage = null;
-        } else {
-            nextPage = null;
-        }
-    }
-    const complaints = allComplaints;
-    const clist = document.getElementById('admin-complaints');
-    if(!complaints || complaints.length === 0) {
-        clist.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 2rem; color: var(--text-muted);">System is currently empty.</td></tr>';
-    } else {
-        clist.innerHTML = '';
-        let pending = 0; let escalated = 0;
-        complaints.forEach(c => {
-            if(c.status !== 'Resolved' && c.status !== 'Escalated') pending++;
-            if(c.is_escalated) escalated++;
-            let statusClass = c.status.replace(' ', '');
-            let tr = document.createElement('tr');
-            tr.style.borderBottom = '1px solid var(--border)';
-            tr.innerHTML = `
-                <td style="padding: 1rem;">#${c.id}</td>
-                <td style="padding: 1rem;">${c.citizen_name}</td>
-                <td style="padding: 1rem; font-weight: 600;">${c.issue_category}</td>
-                <td style="padding: 1rem;"><span class="status-badge status-${statusClass}">${c.status}</span></td>
-                <td style="padding: 1rem;"><span style="color: ${c.priority_level === 'Critical' ? 'var(--danger)' : c.priority_level === 'Warning' ? 'var(--warning)' : 'var(--text-color)'}">${c.priority_level}</span></td>
-                <td style="padding: 1rem;" id="img-cell-admin-${c.id}">
-                    ${c.image ? '<span style="font-size:0.8rem; color:var(--text-muted);">Loading...</span>' : '-'}
-                </td>
-                <td style="padding: 1rem;">
-                    <a href="/complaint/track/?id=${c.id}" class="btn" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: var(--surface-color); color: white; border: 1px solid var(--primary-light);">Audit</a>
-                </td>
-            `;
-            clist.appendChild(tr);
-
-            if (c.image) {
-                fetch(c.image, { headers: getAuthHeaders() }).then(async r => {
-                    if (r.ok) {
-                        const url = URL.createObjectURL(await r.blob());
-                        document.getElementById(`img-cell-admin-${c.id}`).innerHTML = `<a href="${url}" target="_blank"><img src="${url}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border);"></a>`;
-                    }
-                });
-            }
-        });
-        document.getElementById('stat-total').innerText = complaints.length;
-        document.getElementById('stat-pending').innerText = pending;
-        document.getElementById('stat-escalated').innerText = escalated;
-    }
-
-    // 2. Fetch All Wards (Paginated)
-    let allWards = [];
-    let nextWardPage = '/wards/';
-    while(nextWardPage) {
-        const { data: pageData } = await fetchAPI(nextWardPage);
-        if(pageData && pageData.results) {
-            allWards.push(...pageData.results);
-            nextWardPage = pageData.next ? pageData.next.replace(window.location.origin + '/api', '') : null;
-        } else if(pageData && Array.isArray(pageData)) {
-            allWards.push(...pageData);
-            nextWardPage = null;
-        } else {
-            nextWardPage = null;
-        }
-    }
-    const wards = allWards;
-    const wlist = document.getElementById('wards-list');
-    const wselect = document.getElementById('wm-ward');
-    wlist.innerHTML = '';
-    if(wards && wards.length > 0) {
-        wards.forEach(w => {
-            wlist.innerHTML += `<li style="padding: 0.8rem 1rem; background: rgba(255,255,255,0.02); border-radius: 0.5rem; border: 1px solid var(--border);">${w.ward_name}</li>`;
-            if(wselect) wselect.innerHTML += `<option value="${w.id}">${w.ward_name}</option>`;
-        });
-    } else {
-        wlist.innerHTML = '<li style="color: var(--text-muted);">No Wards.</li>';
-    }
-
-    // 3. Fetch All Departments (Paginated)
-    let allDepts = [];
-    let nextDeptPage = '/departments/';
-    while(nextDeptPage) {
-        const { data: pageData } = await fetchAPI(nextDeptPage);
-        if(pageData && pageData.results) {
-            allDepts.push(...pageData.results);
-            nextDeptPage = pageData.next ? pageData.next.replace(window.location.origin + '/api', '') : null;
-        } else if(pageData && Array.isArray(pageData)) {
-            allDepts.push(...pageData);
-            nextDeptPage = null;
-        } else {
-            nextDeptPage = null;
-        }
-    }
-    const depts = allDepts;
-    const dlist = document.getElementById('depts-list');
-    if(!depts || depts.length === 0) {
-        dlist.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 2rem; color: var(--text-muted);">No Departments Found.</td></tr>';
-    } else {
-        dlist.innerHTML = '';
-        depts.forEach(w => {
-            let tr = document.createElement('tr');
-            tr.style.borderBottom = '1px solid var(--border)';
-            tr.innerHTML = `
-                <td style="padding: 1rem; font-weight: 600;">${w.department_name}</td>
-                <td style="padding: 1rem; color: var(--text-muted);">${w.description || 'N/A'}</td>
-                <td style="padding: 1rem;">${w.head_name || '<span style="color: var(--warning)">Unassigned</span>'}</td>
-            `;
-            dlist.appendChild(tr);
-        });
-    }
-});
-
-// --- Wards & Users Logic ---
-async function createWard() {
-    const name = document.getElementById('new-ward-name').value;
-    if(!name) return;
-    const { response } = await fetchAPI('/wards/', {
-        method: 'POST',
-        body: JSON.stringify({ ward_name: name })
-    });
-    if(response.ok) window.location.reload();
-    else alert('Failed to create ward');
-}
-
-async function registerWardMember() {
-    const err = document.getElementById('wm-error');
-    const succ = document.getElementById('wm-success');
-    const btn = document.getElementById('btn-reg-wm');
-    
-    err.style.display = 'none';
-    succ.style.display = 'none';
-    btn.disabled = true;
-    btn.innerHTML = 'Registering...';
-
-    const payload = {
-        username: document.getElementById('wm-username').value,
-        full_name: document.getElementById('wm-fullname').value,
-        email: document.getElementById('wm-email').value || null,
-        phone_number: document.getElementById('wm-phone').value,
-        password: document.getElementById('wm-password').value,
-        ward: document.getElementById('wm-ward').value,
-        role: 'WARD_MEMBER'
-    };
-
-    if(!payload.username || !payload.full_name || !payload.phone_number || !payload.password || !payload.ward) {
-        err.innerText = "Please fill all required fields.";
-        err.style.display = 'block';
-        btn.disabled = false;
-        btn.innerHTML = 'Register';
-        return;
-    }
-
-    try {
-        const res = await fetch('/api/users/register/', {
+    async function createPanchayatFromModal() {
+        const name = document.getElementById('modal-new-panchayat-name').value;
+        if(!name) return;
+        const { response } = await fetchAPI('/panchayats/', {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(payload)
+            body: JSON.stringify({ name: name })
         });
-        const data = await res.json();
-        if (res.ok) {
-            succ.innerText = "Ward Member successfully registered!";
-            succ.style.display = 'block';
-            document.getElementById('wm-username').value = '';
-            document.getElementById('wm-fullname').value = '';
-            document.getElementById('wm-email').value = '';
-            document.getElementById('wm-phone').value = '';
-            document.getElementById('wm-password').value = '';
-        } else {
-            let errorText = '';
-            for (const key in data) { errorText += `<b>${key}</b>: ${data[key][0]}<br>`; }
-            err.innerHTML = errorText;
-            err.style.display = 'block';
-        }
-    } catch (e) {
-        err.innerText = "Network Error.";
-        err.style.display = 'block';
+        if(response.ok) {
+            loadPanchayats();
+            document.getElementById('new-panchayat-modal').style.display='none';
+            document.getElementById('modal-new-panchayat-name').value = '';
+        } else alert('Failed to create panchayat');
     }
-    btn.disabled = false;
-    btn.innerHTML = 'Register';
-}
 
-async function toggleBlock() {
-    const uid = document.getElementById('block-user-id').value;
-    const resElem = document.getElementById('block-result');
-    if(!uid) return;
-    const { response, data } = await fetchAPI(`/users/block/${uid}/`, { method: 'POST' });
-    if(response.ok) {
-        resElem.style.color = "var(--success)";
-        resElem.innerText = data.message;
-    } else {
-        resElem.style.color = "var(--danger)";
-        resElem.innerText = data.error || "Failed to alter block state.";
-    }
-}
-
-// --- Departments Logic ---
-async function createDept() {
-    const name = document.getElementById('new-dept-name').value;
-    const desc = document.getElementById('new-dept-desc').value;
-    if(!name) return alert("Name is required");
-
-    const { response } = await fetchAPI('/departments/', {
-        method: 'POST',
-        body: JSON.stringify({ department_name: name, description: desc })
+    // Navbar specific adjustments
+    document.addEventListener('DOMContentLoaded', () => {
+        lucide.createIcons();
     });
-    
-    if(response.ok) window.location.reload();
-    else alert('Failed to create department');
-}
 
-async function downloadReport(reportFormat) {
-    const token = localStorage.getItem('access_token');
-    try {
-        const response = await fetch(`/api/complaints/weekly_report/?report_type=${reportFormat}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        if (response.ok) {
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `weekly_report_${new Date().toISOString().split('T')[0]}.${reportFormat}`;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            a.remove();
-        } else {
-            alert('Failed to generate report. Ensure you have admin privileges.');
-        }
-    } catch (error) {
-        console.error('Error downloading report:', error);
-        alert('Network error while downloading report.');
+    function switchSection(sectionId, btn) {
+        document.querySelectorAll('.tab-section').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        
+        document.getElementById('section-' + sectionId).classList.add('active');
+        btn.classList.add('active');
+        
+        // Refresh icons for new section
+        lucide.createIcons();
     }
-}
+
+    function toggleWardField(role) {
+        const wField = document.getElementById('ward-select-box');
+        const pField = document.getElementById('panchayat-select-box');
+        
+        if(role === 'DEPARTMENT_HEAD') {
+            wField.style.display = 'none';
+            pField.style.display = 'none';
+        } else {
+            wField.style.display = 'block';
+            pField.style.display = 'block';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        if(localStorage.getItem('user_role') !== 'ADMIN') {
+            window.location.href = "{% url 'home' %}";
+            return;
+        }
+
+        // Fetch Data
+        loadWards();
+        loadPanchayats();
+        loadDepartments();
+    });
+
+    async function loadPanchayats() {
+        const tbody = document.getElementById('panchayats-table-body');
+        const pselect = document.getElementById('wm-panchayat');
+        let panchayats = [];
+        let next = '/panchayats/';
+        while(next) {
+            const { data, response } = await fetchAPI(next);
+            if(response && response.ok) {
+                if(data.results) { panchayats.push(...data.results); next = data.next ? data.next.replace(window.location.origin + '/api', '') : null; }
+                else { panchayats = data; next = null; }
+            } else break;
+        }
+
+        // Populate registration dropdown
+        if(pselect) { pselect.innerHTML = '<option value="">Select a panchayat...</option>'; panchayats.forEach(p => pselect.innerHTML += `<option value="${p.id}">${p.name}</option>`); }
+
+        // Also populate the assign modal dropdown
+        const assignSelect = document.getElementById('assign-panchayat-select');
+        if(assignSelect) { assignSelect.innerHTML = '<option value="">-- No Panchayat --</option>'; panchayats.forEach(p => assignSelect.innerHTML += `<option value="${p.id}">${p.name}</option>`); }
+
+        // Render panchayat table
+        if(tbody) {
+            if(panchayats.length === 0) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-muted); padding: 2rem;">No panchayats created yet.</td></tr>'; return; }
+            tbody.innerHTML = '';
+            panchayats.forEach((p, i) => {
+                const tr = document.createElement('tr');
+                const wardCount = p.ward_count !== undefined ? p.ward_count : '—';
+                tr.innerHTML = `
+                    <td style="color: var(--text-muted); font-size: 0.85rem;">${i + 1}</td>
+                    <td style="font-weight: 700;">${p.name}</td>
+                    <td><span style="background: rgba(99,102,241,0.1); color: var(--primary-light); border-radius: 6px; padding: 0.2rem 0.6rem; font-size: 0.8rem; font-weight: 600;">Linked Wards</span></td>
+                    <td style="text-align:right; padding-right:1rem;">
+                        <button onclick="deletePanchayat(${p.id})" style="background: none; border: none; cursor: pointer; color: var(--danger); opacity: 0.7; padding: 0.3rem;" title="Delete">
+                            <i data-lucide="trash-2" style="width: 14px;"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            lucide.createIcons();
+        }
+    }
+
+    async function deletePanchayat(id) {
+        if(!confirm('Delete this panchayat?')) return;
+        const { response } = await fetchAPI(`/panchayats/${id}/`, { method: 'DELETE' });
+        if(response.ok) { loadPanchayats(); loadWards(); }
+        else alert('Failed to delete panchayat.');
+    }
+
+    async function createPanchayat() {
+        const name = document.getElementById('new-panchayat-name').value.trim();
+        if(!name) return;
+        const { response, data } = await fetchAPI('/panchayats/', {
+            method: 'POST',
+            body: JSON.stringify({ name: name })
+        });
+        if(response.ok) {
+            document.getElementById('new-panchayat-name').value = '';
+            loadPanchayats();
+        } else {
+            alert(data?.name?.[0] || 'Failed to create panchayat.');
+        }
+    }
+
+    async function loadWards() {
+        const tbody = document.getElementById('wards-table-body');
+        const wselect = document.getElementById('wm-ward');
+
+        let wards = [];
+        let next = '/wards/';
+        while(next) {
+            const { data } = await fetchAPI(next);
+            if(data && data.results) { wards.push(...data.results); next = data.next ? data.next.replace(window.location.origin + '/api', '') : null; }
+            else { wards = data || []; next = null; }
+        }
+
+        if(wselect) { wselect.innerHTML = '<option value="">Select a ward...</option>'; wards.forEach(w => wselect.innerHTML += `<option value="${w.id}">${w.ward_name}</option>`); }
+
+        if(tbody) {
+            if(wards.length === 0) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-muted); padding: 2rem;">No wards created yet.</td></tr>'; return; }
+            tbody.innerHTML = '';
+            wards.forEach((w, i) => {
+                const panchayatBadge = w.panchayat_name
+                    ? `<span style="background: rgba(16,185,129,0.1); color: var(--success); border-radius: 6px; padding: 0.2rem 0.75rem; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.4rem;"><i data-lucide="map-pin" style="width:11px;"></i>${w.panchayat_name}</span>`
+                    : `<span style="background: rgba(245,158,11,0.1); color: var(--warning); border-radius: 6px; padding: 0.2rem 0.75rem; font-size: 0.8rem; font-weight: 500;">—</span>`;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="color: var(--text-muted); font-size: 0.85rem;">${i + 1}</td>
+                    <td style="font-weight: 700;">${w.ward_name}</td>
+                    <td>${panchayatBadge}</td>
+                    <td style="text-align:right; padding-right:1rem;">
+                        <button class="link-ward-btn"
+                            data-ward-id="${w.id}"
+                            data-ward-name="${w.ward_name}"
+                            data-panchayat="${w.panchayat || ''}"
+                            style="background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.2); border-radius: 6px; padding: 0.3rem 0.75rem; cursor: pointer; color: var(--primary-light); font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+                            <i data-lucide="link" style="width: 12px;"></i> Link
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Attach click handlers safely via event delegation
+            tbody.querySelectorAll('.link-ward-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    openAssignPanchayat(
+                        btn.dataset.wardId,
+                        btn.dataset.wardName,
+                        btn.dataset.panchayat
+                    );
+                });
+            });
+
+            lucide.createIcons();
+        }
+    }
+
+    async function openAssignPanchayat(wardId, wardName, currentPanchayat) {
+        document.getElementById('assign-ward-id').value = wardId;
+        document.getElementById('assign-ward-label').innerText = `Linking panchayat for ward: ${wardName}`;
+        document.getElementById('assign-panchayat-modal').style.display = 'flex';
+
+        // Always reload panchayats fresh into the modal dropdown
+        const sel = document.getElementById('assign-panchayat-select');
+        sel.innerHTML = '<option value="">Loading...</option>';
+        let panchayats = [];
+        let next = '/panchayats/';
+        while(next) {
+            const { data, response } = await fetchAPI(next);
+            if(response && response.ok) {
+                if(data.results) { panchayats.push(...data.results); next = data.next ? data.next.replace(window.location.origin + '/api', '') : null; }
+                else { panchayats = data; next = null; }
+            } else break;
+        }
+        sel.innerHTML = '<option value="">-- No Panchayat --</option>';
+        panchayats.forEach(p => sel.innerHTML += `<option value="${p.id}">${p.name}</option>`);
+        // Pre-select current panchayat if set
+        if(currentPanchayat && currentPanchayat !== 'null') sel.value = currentPanchayat;
+    }
+
+    async function savePanchayatAssignment() {
+        const wardId = document.getElementById('assign-ward-id').value;
+        const panchayatId = document.getElementById('assign-panchayat-select').value;
+        const token = localStorage.getItem('access_token');
+
+        if(!token) {
+            alert('Session expired. Please log in again.');
+            window.location.href = "{% url 'login_page' %}";
+            return;
+        }
+
+        const payload = panchayatId ? { panchayat: parseInt(panchayatId) } : { panchayat: null };
+
+        try {
+            const response = await fetch(`/api/wards/${wardId}/`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+            const data = await response.json();
+            if(response.ok) {
+                document.getElementById('assign-panchayat-modal').style.display = 'none';
+                loadWards();
+            } else {
+                alert('Failed to link panchayat.\nStatus: ' + response.status + '\n' + JSON.stringify(data));
+            }
+        } catch(e) {
+            alert('Network error: ' + e.message);
+        }
+    }
+
+
+    async function loadDepartments() {
+        const dbody = document.getElementById('depts-list-body');
+        if(!dbody) return;
+        dbody.innerHTML = '<tr><td colspan="4" style="text-align:center"><div class="loader"></div></td></tr>';
+
+        let depts = [];
+        let next = '/departments/';
+        while(next) {
+            const { data } = await fetchAPI(next);
+            if(data.results) {
+                depts.push(...data.results);
+                next = data.next ? data.next.replace(window.location.origin + '/api', '') : null;
+            } else {
+                depts = data; next = null;
+            }
+        }
+
+        dbody.innerHTML = '';
+        depts.forEach(d => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="font-weight: 700;">${d.department_name}</td>
+                <td style="color: var(--text-muted); font-size: 0.9rem;">${d.description || '--'}</td>
+                <td>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="font-weight: 600; display: flex; align-items: center; gap: 0.5rem; color: ${d.head_name ? 'var(--text-color)' : 'var(--warning)'}">
+                            <i data-lucide="user" style="width: 14px;"></i>
+                            ${d.head_name || 'UNASSIGNED'}
+                        </span>
+                        <button onclick="openHeadModal(${d.id})" style="background: none; border: none; padding: 0.2rem; cursor: pointer; color: var(--primary-light); opacity: 0.7;" title="Assign Official">
+                            <i data-lucide="user-plus" style="width: 14px;"></i>
+                        </button>
+                    </div>
+                </td>
+                <td style="text-align: right; padding-right: 1.5rem;">
+                    <button onclick="archiveDept(${d.id})" class="btn btn-danger" style="padding: 0.4rem 0.75rem; font-size: 0.8rem; height: auto;">
+                        <i data-lucide="trash-2" style="width: 14px;"></i> Archive
+                    </button>
+                </td>
+            `;
+            dbody.appendChild(tr);
+        });
+        lucide.createIcons();
+    }
+
+    async function openHeadModal(deptId) {
+        document.getElementById('active-dept-id').value = deptId;
+        const modal = document.getElementById('head-modal');
+        const select = document.getElementById('head-select');
+        modal.style.display = 'flex';
+        select.innerHTML = '<option value="">Loading officials...</option>';
+
+        const { data } = await fetchAPI('/users/heads/');
+        const heads = data.results || data;
+        select.innerHTML = '<option value="">Select Official...</option>';
+        if(heads && heads.length > 0) {
+            heads.forEach(h => {
+                select.innerHTML += `<option value="${h.id}">${h.full_name || h.username} (@${h.username})</option>`;
+            });
+        } else {
+            select.innerHTML = '<option value="">No heads registered.</option>';
+        }
+    }
+
+    function closeHeadModal() {
+        document.getElementById('head-modal').style.display = 'none';
+    }
+
+    async function assignHead() {
+        const deptId = document.getElementById('active-dept-id').value;
+        const headId = document.getElementById('head-select').value;
+        if(!headId) return alert("Select an official");
+
+        const { response } = await fetchAPI(`/departments/${deptId}/`, {
+            method: 'PATCH',
+            body: JSON.stringify({ head: headId })
+        });
+
+        if(response.ok) {
+            closeHeadModal();
+            loadDepartments();
+        } else alert("Assignment failed.");
+    }
+
+    async function archiveDept(id) {
+        if(!confirm("Are you sure you want to archive (delete) this department? This action is permanent.")) return;
+        const { response } = await fetchAPI(`/departments/${id}/`, { method: 'DELETE' });
+        if(response.ok) loadDepartments();
+        else alert("Failed to delete department.");
+    }
+
+    // Reuse logic from old dashboard
+    async function createWard() {
+        const name = document.getElementById('new-ward-name').value;
+        if(!name) return;
+        const { response } = await fetchAPI('/wards/', {
+            method: 'POST',
+            body: JSON.stringify({ ward_name: name })
+        });
+        if(response.ok) loadWards();
+        else alert('Failed to create ward');
+        document.getElementById('new-ward-name').value = '';
+    }
+
+    async function registerWardMember() {
+        const err = document.getElementById('wm-error');
+        const succ = document.getElementById('wm-success');
+        const btn = document.getElementById('btn-reg-wm');
+        
+        err.innerText = ''; succ.innerText = '';
+        btn.disabled = true;
+
+        const role = document.getElementById('wm-role').value;
+        const payload = {
+            username: document.getElementById('wm-username').value,
+            full_name: document.getElementById('wm-fullname').value,
+            email: document.getElementById('wm-email').value || null,
+            phone_number: document.getElementById('wm-phone').value,
+            password: document.getElementById('wm-password').value,
+            role: role
+        };
+
+        if(role === 'WARD_MEMBER') {
+            payload.ward = document.getElementById('wm-ward').value;
+            payload.panchayat = document.getElementById('wm-panchayat').value;
+        }
+
+        try {
+            const res = await fetch('/api/users/register/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (res.ok) {
+                succ.innerText = "Official Registered Successfully!";
+                // Reset form
+                ['wm-username', 'wm-fullname', 'wm-email', 'wm-phone', 'wm-password', 'wm-ward'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if(el) el.value = '';
+                });
+            } else {
+                err.innerText = Object.values(data)[0][0] || "Registration failed.";
+            }
+        } catch (e) {
+            err.innerText = "Network failure.";
+        }
+        btn.disabled = false;
+    }
+
+    async function toggleBlock() {
+        const uid = document.getElementById('block-user-id').value;
+        const resElem = document.getElementById('block-result');
+        if(!uid) return;
+        const { response, data } = await fetchAPI(`/users/block/${uid}/`, { method: 'POST' });
+        if(response.ok) {
+            resElem.style.color = "var(--success)";
+            resElem.innerText = data.message;
+        } else {
+            resElem.style.color = "var(--danger)";
+            resElem.innerText = data.error || "Failed.";
+        }
+    }
+
+    async function createDept() {
+        const name = document.getElementById('new-dept-name').value;
+        const desc = document.getElementById('new-dept-desc').value;
+        if(!name) return alert("Name is required");
+        const { response } = await fetchAPI('/departments/', {
+            method: 'POST',
+            body: JSON.stringify({ department_name: name, description: desc })
+        });
+        if(response.ok) loadDepartments();
+        document.getElementById('new-dept-name').value = '';
+        document.getElementById('new-dept-desc').value = '';
+    }
+
+    async function downloadReport(fmt) {
+        const token = localStorage.getItem('access_token');
+        try {
+            const response = await fetch(`/api/complaints/weekly_report/?report_type=${fmt}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Weekly_Report_${new Date().toLocaleDateString()}.${fmt}`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+            } else alert('Download failed.');
+        } catch (e) { alert('Network error.'); }
+    }
 </script>
 {% endblock %}

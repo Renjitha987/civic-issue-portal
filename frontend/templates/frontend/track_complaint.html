@@ -86,6 +86,7 @@
 const urlParams = new URLSearchParams(window.location.search);
 const complaintId = urlParams.get('id');
 const role = localStorage.getItem('user_role');
+let currentComplaintData = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
     if(!complaintId) { window.location.href = "{% url 'home' %}"; return; }
@@ -93,6 +94,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const { data: c, response } = await fetchAPI(`/complaints/${complaintId}/`);
     if(!response.ok) { document.getElementById('complaint-title').innerText = "Ticket Not Found or Access Denied."; return; }
 
+    currentComplaintData = c;
     document.getElementById('complaint-title').innerText = `Issue #${c.id} - ${c.issue_category}`;
     document.getElementById('complaint-desc').innerText = c.description;
     
@@ -189,7 +191,7 @@ async function loadDepartments() {
     sel.innerHTML = '<option value="">Select Department...</option>'; // Clear existing options
     depts.forEach(d => { sel.innerHTML += `<option value="${d.id}">${d.department_name}</option>`; });
     if (currentComplaintData && currentComplaintData.department) {
-        sel.value = currentComplaintData.department.id; // Pre-select current department if assigned
+        sel.value = currentComplaintData.department; // Pre-select current department if assigned
     }
 }
 

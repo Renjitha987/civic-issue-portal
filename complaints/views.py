@@ -23,18 +23,21 @@ class ComplaintViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        queryset = Complaint.objects.none()
+        
         if user.role == 'ADMIN':
-            return Complaint.objects.all()
+            queryset = Complaint.objects.all()
         elif user.role == 'WARD_MEMBER':
-            return Complaint.objects.filter(ward=user.ward)
+            queryset = Complaint.objects.filter(ward=user.ward)
         elif user.role == 'DEPARTMENT_HEAD':
             from django.db.models import Q
-            return Complaint.objects.filter(
+            queryset = Complaint.objects.filter(
                 Q(department__head=user) | Q(forwardings__department__head=user)
             ).distinct()
         elif user.role == 'CITIZEN':
-            return Complaint.objects.filter(citizen=user)
-        return Complaint.objects.none()
+            queryset = Complaint.objects.filter(citizen=user)
+            
+        return queryset.order_by('-date_submitted', '-id')
 
     def perform_create(self, serializer):
         user = self.request.user
@@ -42,7 +45,14 @@ class ComplaintViewSet(viewsets.ModelViewSet):
             raise serializers.ValidationError('Only Citizens can create complaints directly.')
         if not hasattr(user, 'ward') or not user.ward:
             raise serializers.ValidationError('Your citizen profile is missing a registered ward. Please update your profile or contact an administrator before filing a complaint.')
-        serializer.save(citizen=user, ward=user.ward)
+        
+        issue_category = serializer.validated_data.get('issue_category')
+        department = None
+        if issue_category:
+            from departments.models import Department
+            department = Department.objects.filter(department_name=issue_category).first()
+
+        serializer.save(citizen=user, ward=user.ward, department=department)
 
     def perform_update(self, serializer):
         complaint = self.get_object()

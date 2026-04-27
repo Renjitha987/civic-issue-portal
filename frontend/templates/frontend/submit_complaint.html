@@ -11,15 +11,13 @@
 
         <form id="complaint-form">
             <div class="form-group">
-                <label for="issue_category">Type of Issue</label>
+                <label for="issue_category">Department / Type of Issue</label>
                 <select id="issue_category" class="form-control" required>
-                    <option value="" disabled selected>Select category...</option>
-                    <option value="Waste">Waste Management</option>
-                    <option value="Electricity">Public Electricity</option>
-                    <option value="Road">Road & Infrastructure</option>
-                    <option value="Health">Public Health</option>
-                    <option value="Water">Water Supply</option>
+                    <option value="" disabled selected>Loading departments...</option>
                 </select>
+                <small style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.4rem; display: block;">
+                    Select the department that best matches your concern.
+                </small>
             </div>
             
             <div class="form-group">
@@ -47,10 +45,46 @@
 
 {% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     if(localStorage.getItem('user_role') !== 'CITIZEN') {
         alert("Only registered citizens can directly submit new complaints.");
         window.location.href = "{% url 'home' %}";
+        return;
+    }
+
+    // Dynamically load ALL departments from the database (handles pagination)
+    try {
+        let depts = [];
+        let url = '/api/departments/';
+        const token = localStorage.getItem('access_token');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+        while(url) {
+            const res = await fetch(url, { headers });
+            const responseData = await res.json();
+            if(responseData.results) {
+                depts.push(...responseData.results);
+                url = responseData.next || null;
+            } else {
+                depts = responseData;
+                url = null;
+            }
+        }
+
+        const select = document.getElementById('issue_category');
+        select.innerHTML = '<option value="" disabled selected>Select department...</option>';
+
+        if(depts && depts.length > 0) {
+            depts.forEach(d => {
+                select.innerHTML += `<option value="${d.department_name}">${d.department_name}${d.description ? ' — ' + d.description : ''}</option>`;
+            });
+        } else {
+            select.innerHTML = '<option value="" disabled>No departments available. Contact admin.</option>';
+        }
+    } catch(e) {
+        console.error("Failed to load departments:", e);
+        const select = document.getElementById('issue_category');
+        select.innerHTML = '<option value="" disabled>Failed to load. Please refresh.</option>';
     }
 });
 

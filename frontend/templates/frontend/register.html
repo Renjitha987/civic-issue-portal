@@ -46,10 +46,17 @@
                 </select>
             </div>
 
+            <div class="form-group" id="panchayat-group">
+                <label for="panchayat">Select Panchayat</label>
+                <select id="panchayat" class="form-control">
+                    <option value="">Loading panchayats...</option>
+                </select>
+            </div>
+
             <div class="form-group" id="ward-group">
-                <label for="ward">Select Ward</label>
-                <select id="ward" class="form-control">
-                    <option value="">Loading wards...</option>
+                <label for="ward">Select Ward <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">(Choose Panchayat first)</span></label>
+                <select id="ward" class="form-control" disabled>
+                    <option value="">Select a Panchayat first</option>
                 </select>
             </div>
 
@@ -75,35 +82,67 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Dynamic Role Form Toggle
     const roleSelect = document.getElementById('role');
     const wardGroup = document.getElementById('ward-group');
+    const panchayatGroup = document.getElementById('panchayat-group');
     const aadhaarGroup = document.getElementById('aadhaar-group');
 
     roleSelect.addEventListener('change', (e) => {
         if(e.target.value === 'CITIZEN') {
             aadhaarGroup.style.display = 'block';
             wardGroup.style.display = 'block';
+            panchayatGroup.style.display = 'block';
         } else if(e.target.value === 'WARD_MEMBER') {
             aadhaarGroup.style.display = 'none';
             wardGroup.style.display = 'block';
+            panchayatGroup.style.display = 'block';
         } else {
             aadhaarGroup.style.display = 'none';
             wardGroup.style.display = 'none';
+            panchayatGroup.style.display = 'none';
         }
     });
 
-    // Fetch Wards
+    let allWards = [];
+
+    // Fetch Wards and store them
     try {
         const res = await fetch('/api/wards/');
         const responseData = await res.json();
-        // Check for pagination wrapper
-        const data = responseData.results || responseData;
-        
-        const wardSelect = document.getElementById('ward');
-        wardSelect.innerHTML = '<option value="">Select a Ward</option>';
-        data.forEach(w => {
-            wardSelect.innerHTML += `<option value="${w.id}">${w.ward_name}</option>`;
-        });
+        allWards = responseData.results || responseData;
     } catch(e) {
         console.error("Failed to load wards");
+    }
+
+    // Fetch Panchayats
+    try {
+        const res = await fetch('/api/panchayats/');
+        const responseData = await res.json();
+        const data = responseData.results || responseData;
+        
+        const panchayatSelect = document.getElementById('panchayat');
+        panchayatSelect.innerHTML = '<option value="">Select a Panchayat</option>';
+        data.forEach(p => {
+            panchayatSelect.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+        });
+
+        // Filter Handlers
+        const wardSelect = document.getElementById('ward');
+        panchayatSelect.addEventListener('change', (e) => {
+            const p_id = e.target.value;
+            if(!p_id) {
+                wardSelect.innerHTML = '<option value="">Select a Panchayat first</option>';
+                wardSelect.disabled = true;
+                return;
+            }
+            
+            wardSelect.disabled = false;
+            wardSelect.innerHTML = '<option value="">Select a Ward</option>';
+            const filteredWards = allWards.filter(w => w.panchayat == p_id);
+            filteredWards.forEach(w => {
+                wardSelect.innerHTML += `<option value="${w.id}">${w.ward_name}</option>`;
+            });
+        });
+    } catch(e) {
+        console.error("Failed to load panchayats");
     }
 });
 
@@ -128,6 +167,9 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
 
     const ward = document.getElementById('ward').value;
     if(ward) payload.ward = parseInt(ward);
+
+    const panchayat = document.getElementById('panchayat').value;
+    if(panchayat) payload.panchayat = parseInt(panchayat);
 
     if(payload.role === 'CITIZEN') {
         payload.aadhaar_id = document.getElementById('aadhaar_id').value;

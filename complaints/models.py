@@ -4,13 +4,6 @@ from wards.models import Ward
 from departments.models import Department
 
 class Complaint(models.Model):
-    CATEGORY_CHOICES = (
-        ('Waste', 'Waste'),
-        ('Electricity', 'Electricity'),
-        ('Road', 'Road'),
-        ('Health', 'Health'),
-        ('Water', 'Water'),
-    )
     STATUS_CHOICES = (
         ('Pending', 'Pending'),
         ('In Progress', 'In Progress'),
@@ -26,7 +19,7 @@ class Complaint(models.Model):
 
     citizen = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='filed_complaints')
     ward = models.ForeignKey(Ward, on_delete=models.CASCADE, related_name='complaints')
-    issue_category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    issue_category = models.CharField(max_length=150)  # Free-text: synced from department names
     description = models.TextField()
     location = models.CharField(max_length=255)
     
