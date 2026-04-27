@@ -48,6 +48,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    
 ]
 
 
@@ -75,13 +76,16 @@ WSGI_APPLICATION = 'civic_portal.wsgi.application'
 
 
 # DATABASE (Render PostgreSQL)
+import dj_database_url
+
+import dj_database_url
+
 DATABASES = {
     'default': dj_database_url.config(
-        conn_max_age=600,
-        ssl_require=True
+        default=f"sqlite:///{BASE_DIR}/db.sqlite3",
+        conn_max_age=600
     )
 }
-
 
 # PASSWORD VALIDATION
 AUTH_PASSWORD_VALIDATORS = [
