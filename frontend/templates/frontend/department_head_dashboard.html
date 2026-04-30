@@ -123,7 +123,7 @@
                 <td style="padding: 1rem;"><span class="status-badge status-${statusClass}">${c.status}</span></td>
                 <td style="padding: 1rem;"><span style="color: ${c.priority_level === 'Critical' ? 'var(--danger)' : c.priority_level === 'Warning' ? 'var(--warning)' : 'var(--text-color)'}">${c.priority_level}</span></td>
                 <td style="padding: 1rem;" id="img-cell-dept-${c.id}">
-                    ${c.image ? '<span style="font-size:0.8rem; color:var(--text-muted);">Loading...</span>' : '-'}
+                    ${c.image ? '' : '-'}
                 </td>
                 <td style="padding: 1rem;">
                     <a href="/complaint/track/?id=${c.id}" class="btn" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: var(--surface-color); color: white; border: 1px solid var(--primary-light);">Review</a>
@@ -132,11 +132,16 @@
                 list.appendChild(tr);
 
                 if (c.image) {
-                    fetch(c.image, { headers: getAuthHeaders() }).then(async r => {
-                        if (r.ok) {
-                            const url = URL.createObjectURL(await r.blob());
-                            document.getElementById(`img-cell-dept-${c.id}`).innerHTML = `<a href="${url}" target="_blank"><img src="${url}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border);"></a>`;
-                        }
+    const imgCell = document.getElementById(`img-cell-dept-${c.id}`);
+    imgCell.innerHTML = `
+        <a href="${c.image}" target="_blank">
+            <img src="${c.image}" style="width:60px; border-radius:6px;" />
+        </a>
+    `;
+} else {
+    const imgCell = document.getElementById(`img-cell-dept-${c.id}`);
+    imgCell.innerHTML = '-';
+}
                     });
                 }
             });
