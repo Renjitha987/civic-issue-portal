@@ -99,18 +99,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('complaint-desc').innerText = c.description;
     
     if (c.image) {
-        document.getElementById('complaint-image-container').style.display = 'block';
-        const imgEl = document.getElementById('complaint-image');
-        fetch(c.image, { headers: getAuthHeaders() }).then(async (res) => {
-            if (res.ok) {
-                const url = URL.createObjectURL(await res.blob());
-                imgEl.src = url;
-                document.getElementById('complaint-image-link').href = url;
-            } else {
-                imgEl.alt = "Image could not be loaded.";
-            }
-        }).catch(() => { imgEl.alt = "Network error loading image."; });
-    }
+    document.getElementById('complaint-image-container').style.display = 'block';
+
+    const imgEl = document.getElementById('complaint-image');
+
+    imgEl.src = c.image;
+
+    document.getElementById('complaint-image-link').href = c.image;
+} else {
+    document.getElementById('complaint-image-container').style.display = 'none';
+}
     
     let statusClass = c.status.replace(' ', '');
     const sBadge = document.getElementById('complaint-status');
