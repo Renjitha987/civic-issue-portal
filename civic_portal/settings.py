@@ -17,7 +17,6 @@ import datetime
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-<<<<<<< HEAD
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
@@ -25,8 +24,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-l9ka^^5dn6c86ye-ec=11o$a1o69neojj#2-_be39(4($n5g+l'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-=======
->>>>>>> 7957f33635b75ea5d11a79b91fadf7948dac2497
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
@@ -35,6 +32,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'users.apps.UsersConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -49,7 +47,6 @@ INSTALLED_APPS = [
     'django_filters',
 
     # Local apps
-    'users.apps.UsersConfig',
     'wards.apps.WardsConfig',
     'departments.apps.DepartmentsConfig',
     'complaints.apps.ComplaintsConfig',
@@ -58,34 +55,6 @@ INSTALLED_APPS = [
     'frontend.apps.FrontendConfig',
 ]
 
-<<<<<<< HEAD
-=======
-
-INSTALLED_APPS += ['storages']
-
-AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
-AWS_STORAGE_BUCKET_NAME = "civic-portal-static-unique123"
-AWS_S3_REGION_NAME = "us-east-1"
-
-AWS_LOCATION = 'static'
-AWS_DEFAULT_ACL = None
-
-# 👇 ADD THESE HERE
-AWS_S3_SIGNATURE_VERSION = "s3v4"
-AWS_QUERYSTRING_AUTH = False
-AWS_S3_FILE_OVERWRITE = True
-
-AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
-
-STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-
-STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/'
-
-
-
-# MIDDLEWARE
->>>>>>> 7957f33635b75ea5d11a79b91fadf7948dac2497
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'corsheaders.middleware.CorsMiddleware',
@@ -129,17 +98,8 @@ WSGI_APPLICATION = 'civic_portal.wsgi.application'
 
 DATABASES = {
     'default': {
-<<<<<<< HEAD
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
-=======
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'civicdb',
-        'USER': 'postgres',
-        'PASSWORD': '12345678',
-        'HOST': 'civic-db.c4h8essq6bq5.us-east-1.rds.amazonaws.com',
-        'PORT': '5432',
->>>>>>> 7957f33635b75ea5d11a79b91fadf7948dac2497
     }
 }
 
@@ -174,40 +134,10 @@ USE_I18N = True
 
 USE_TZ = True
 
-
-<<<<<<< HEAD
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
-=======
-# STATIC FILES (VERY IMPORTANT)
-#STATIC_URL = '/static/'
-#STATIC_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/'
-
-STATIC_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/static/'
-MEDIA_URL = "https://d20ibzjjryb5wl.cloudfront.net/"
-#MEDIA_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/media/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-AWS_S3_OBJECT_PARAMETERS = {
-    'CacheControl': 'max-age=86400',
-}
-
-STORAGES = {
-    "default": {
-        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-    },
-    "staticfiles": {
-        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-    },
-}
-#STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-#STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
-
-# MEDIA
->>>>>>> 7957f33635b75ea5d11a79b91fadf7948dac2497
+STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
@@ -245,7 +175,6 @@ SIMPLE_JWT = {
 # CORS Settings - allow all for dev
 CORS_ALLOW_ALL_ORIGINS = True
 
-<<<<<<< HEAD
 # Celery Details
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
 CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
@@ -253,7 +182,3 @@ CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
-=======
-# CORS
-CORS_ALLOW_ALL_ORIGINS = True
->>>>>>> 7957f33635b75ea5d11a79b91fadf7948dac2497

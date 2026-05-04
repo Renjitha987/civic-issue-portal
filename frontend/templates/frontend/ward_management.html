@@ -142,13 +142,10 @@ async function registerWardMember() {
     }
 
     try {
-        const res = await fetch('/api/users/register/', {
+        const { response: res, data } = await fetchAPI('/users/register/', {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(payload)
         });
-        
-        const data = await res.json();
         
         if (res.ok) {
             succ.innerText = "Ward Member successfully registered!";
@@ -160,8 +157,12 @@ async function registerWardMember() {
             document.getElementById('wm-password').value = '';
         } else {
             let errorText = '';
-            for (const key in data) {
-                errorText += `<b>${key}</b>: ${data[key][0]}<br>`;
+            if (typeof data === 'object') {
+                for (const key in data) {
+                    errorText += `<b>${key}</b>: ${Array.isArray(data[key]) ? data[key][0] : data[key]}<br>`;
+                }
+            } else {
+                errorText = 'Registration failed.';
             }
             err.innerHTML = errorText;
             err.style.display = 'block';

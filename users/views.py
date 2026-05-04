@@ -43,16 +43,16 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
     def post(self, request, *args, **kwargs):
-        response = super().post(request, *args, **kwargs)
-        if response.status_code == status.HTTP_200_OK:
-            # Established session for web-based SSR views
-            user = authenticate(
-                username=request.data.get('username'),
-                password=request.data.get('password')
-            )
-            if user:
-                login(request, user)
-        return response
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        # Established session for web-based SSR views
+        user = getattr(serializer, 'user', None)
+        if user:
+            login(request, user)
+            
+        return Response(serializer.validated_data, status=status.HTTP_200_OK)
 
 
 class RegisterView(generics.CreateAPIView):

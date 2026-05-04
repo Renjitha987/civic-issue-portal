@@ -169,13 +169,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error("Failed to load departments:", e);
         document.getElementById('edit-category').innerHTML = '<option value="">Error loading categories</option>';
     }
+        if (typeof lucide !== 'undefined') lucide.createIcons();
 
     // Load Complaints
     const { data: complaintsData } = await fetchAPI('/complaints/');
-    const complaints = complaintsData ? (complaintsData.results || complaintsData) : [];
+    const complaints = complaintsData && Array.isArray(complaintsData.results) ? complaintsData.results : (Array.isArray(complaintsData) ? complaintsData : []);
     const list = document.getElementById('complaints-list');
     
-    if(!complaints || complaints.length === 0) {
+    if(!complaints || complaints.length === 0 || !Array.isArray(complaints)) {
         list.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 2rem; color: var(--text-muted);">You have not reported any issues yet.</td></tr>';
     } else {
         list.innerHTML = '';
@@ -205,12 +206,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             list.appendChild(tr);
 
             if (c.image) {
-                fetch(c.image, { headers: getAuthHeaders() }).then(async r => {
-                    if (r.ok) {
-                        const url = URL.createObjectURL(await r.blob());
-                        document.getElementById(`img-cell-citizen-${c.id}`).innerHTML = `<a href="${url}" target="_blank"><img src="${url}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border);"></a>`;
-                    }
-                });
+                loadAuthImage(c.image, `img-cell-citizen-${c.id}`);
             }
         });
     }

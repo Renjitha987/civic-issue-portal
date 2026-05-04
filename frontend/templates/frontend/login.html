@@ -47,13 +47,10 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     };
 
     try {
-        const res = await fetch('/api/users/login/', {
+        const { response: res, data } = await fetchAPI('/users/login/', {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(payload)
         });
-        
-        const data = await res.json();
         
         if (res.ok) {
             localStorage.setItem('access_token', data.access);
@@ -65,7 +62,15 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
             else if (data.role === 'DEPARTMENT_HEAD') window.location.href = "{% url 'department_head_dashboard' %}";
             else window.location.href = "{% url 'citizen_dashboard' %}";
         } else {
-            err.innerText = data.detail || data.non_field_errors?.[0] || 'Invalid credentials. Please try again.';
+            let message = 'Invalid credentials. Please try again.';
+            if (data && data.detail) message = data.detail;
+            else if (data && data.non_field_errors) message = data.non_field_errors[0];
+            else if (data && typeof data === 'object') {
+                const firstKey = Object.keys(data)[0];
+                if (Array.isArray(data[firstKey])) message = `${firstKey}: ${data[firstKey][0]}`;
+                else if (typeof data[firstKey] === 'string') message = data[firstKey];
+            }
+            err.innerText = message;
             err.style.display = 'block';
             btn.innerHTML = 'Sign In';
             btn.disabled = false;

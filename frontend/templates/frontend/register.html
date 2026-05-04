@@ -105,8 +105,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Fetch Wards and store them
     try {
-        const res = await fetch('/api/wards/');
-        const responseData = await res.json();
+        const { data: responseData } = await fetchAPI('/wards/');
         allWards = responseData.results || responseData;
     } catch(e) {
         console.error("Failed to load wards");
@@ -114,8 +113,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Fetch Panchayats
     try {
-        const res = await fetch('/api/panchayats/');
-        const responseData = await res.json();
+        const { data: responseData } = await fetchAPI('/panchayats/');
         const data = responseData.results || responseData;
         
         const panchayatSelect = document.getElementById('panchayat');
@@ -176,21 +174,22 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
     }
 
     try {
-        const res = await fetch('/api/users/register/', {
+        const { response: res, data } = await fetchAPI('/users/register/', {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(payload)
         });
-        
-        const data = await res.json();
         
         if (res.ok) {
             // Success, auto-login or redirect
             window.location.href = "{% url 'login_page' %}?registered=true";
         } else {
             let errorText = '';
-            for (const key in data) {
-                errorText += `<b>${key}</b>: ${data[key][0]}<br>`;
+            if (typeof data === 'object') {
+                for (const key in data) {
+                    errorText += `<b>${key}</b>: ${Array.isArray(data[key]) ? data[key][0] : data[key]}<br>`;
+                }
+            } else {
+                errorText = 'Registration failed.';
             }
             err.innerHTML = errorText;
             err.style.display = 'block';

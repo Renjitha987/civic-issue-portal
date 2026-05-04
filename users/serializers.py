@@ -33,8 +33,6 @@ class RegisterSerializer(serializers.ModelSerializer):
     def validate_password(self, value):
         if not any(char.isdigit() for char in value):
             raise serializers.ValidationError('Password must contain at least one number.')
-        if not any(char in '!@#$%^&*()-_+={}[]|\\:;"\'<>,.?/' for char in value):
-            raise serializers.ValidationError('Password must contain at least one special character.')
         return value
 
     def create(self, validated_data):

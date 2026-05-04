@@ -6,7 +6,8 @@
     <title>{% block title %}Civic Issue Portal{% endblock %}</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏛️</text></svg>">
+
     <style>
         :root {
             --primary: #6366f1;
@@ -207,8 +208,8 @@
 
     <!-- Government Portal Header -->
     <div class="gov-header" style="background: linear-gradient(to right, #0a3a82, #1456a3); font-family: 'Inter', sans-serif; position: relative;">
-        <!-- Faint background pattern -->
-        <div style="position: absolute; top: 0; right: 0; bottom: 0; left: 0; background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Rashtrapati_Bhavan_-_New_Delhi.jpg/1200px-Rashtrapati_Bhavan_-_New_Delhi.jpg'); background-size: cover; background-position: center; opacity: 0.15; pointer-events: none;"></div>
+        <!-- Faint background pattern using a CSS gradient -->
+        <div style="position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: linear-gradient(135deg, rgba(10, 58, 130, 0.2) 0%, rgba(20, 86, 163, 0.4) 100%); opacity: 0.8; pointer-events: none;"></div>
         
         <div style="max-width: 1400px; margin: 0 auto; padding: 0.5rem 1.5rem; display: flex; justify-content: space-between; align-items: stretch; position: relative; z-index: 1;">
             <div style="display: flex; align-items: center; gap: 15px;">
@@ -261,11 +262,13 @@
         
         function getAuthHeaders() {
             const token = localStorage.getItem('access_token');
-            if(!token) return {};
-            return {
-                'Authorization': `Bearer ${token}`,
+            const headers = {
                 'Content-Type': 'application/json'
             };
+            if(token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            return headers;
         }
 
         function checkAuth() {
@@ -293,27 +296,69 @@
             window.location.href = "{% url 'home' %}";
         }
 
-        document.addEventListener('DOMContentLoaded', checkAuth);
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        });
+
 
         async function fetchAPI(endpoint, options = {}) {
-            options.headers = { ...options.headers, ...getAuthHeaders() };
+            const authHeaders = getAuthHeaders();
+            
+            // If body is FormData, don't set Content-Type (fetch will set it with boundary)
+            if (options.body && options.body instanceof FormData) {
+                delete authHeaders['Content-Type'];
+            }
+            
+            options.headers = { ...authHeaders, ...options.headers };
+            
             try {
-                const response = await fetch(`${API_URL}${endpoint}`, options);
+                const url = endpoint.startsWith('http') ? endpoint : `${API_URL}${endpoint}`;
+                const response = await fetch(url, options);
+                
                 let data = null;
                 if(response.status !== 204) {
-                    data = await response.json();
+                    const text = await response.text();
+                    try {
+                        data = text ? JSON.parse(text) : null;
+                    } catch(e) {
+                        console.warn("Response not JSON", text);
+                        data = { detail: text };
+                    }
                 }
                 
-                if(response.status === 401) {
+                if(response.status === 401 && !endpoint.includes('login')) {
                     logout();
                 }
                 return { response, data };
             } catch (err) {
                 console.error("API error", err);
-                return { response: {ok: false}, data: {error: err.message} };
+                return { response: {ok: false, statusText: err.message}, data: {error: err.message} };
+            }
+        }
+
+        async function loadAuthImage(url, elementId, styles = "") {
+            if (!url) return;
+            const container = document.getElementById(elementId);
+            if (!container) return;
+            
+            try {
+                const response = await fetch(url, { headers: getAuthHeaders() });
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const objectUrl = URL.createObjectURL(blob);
+                    container.innerHTML = `<a href="${objectUrl}" target="_blank"><img src="${objectUrl}" style="${styles || 'width: 50px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border);'}"></a>`;
+                } else {
+                    container.innerHTML = '<span style="font-size:0.7rem; color:var(--danger);">Error</span>';
+                }
+            } catch (e) {
+                container.innerHTML = '<span style="font-size:0.7rem; color:var(--danger);">Err</span>';
             }
         }
     </script>
     {% block scripts %}{% endblock %}
+    <script src="https://unpkg.com/lucide@latest" defer></script>
 </body>
 </html>

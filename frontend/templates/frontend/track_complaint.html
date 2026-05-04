@@ -99,16 +99,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('complaint-desc').innerText = c.description;
     
     if (c.image) {
-    document.getElementById('complaint-image-container').style.display = 'block';
-
-    const imgEl = document.getElementById('complaint-image');
-
-    imgEl.src = c.image;
-
-    document.getElementById('complaint-image-link').href = c.image;
-} else {
-    document.getElementById('complaint-image-container').style.display = 'none';
-}
+        document.getElementById('complaint-image-container').style.display = 'block';
+        loadAuthImage(c.image, 'complaint-image-link', 'max-width: 100%; max-height: 300px; border-radius: 0.5rem; border: 1px solid var(--border); object-fit: contain;');
+    } else {
+        document.getElementById('complaint-image-container').style.display = 'none';
+    }
     
     let statusClass = c.status.replace(' ', '');
     const sBadge = document.getElementById('complaint-status');

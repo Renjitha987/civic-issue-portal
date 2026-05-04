@@ -103,12 +103,13 @@
             window.location.href = "{% url 'home' %}";
             return;
         }
+        if (typeof lucide !== 'undefined') lucide.createIcons();
 
         const { data: complaintsData } = await fetchAPI('/complaints/');
-        const complaints = complaintsData ? (complaintsData.results || complaintsData) : [];
+        const complaints = complaintsData && Array.isArray(complaintsData.results) ? complaintsData.results : (Array.isArray(complaintsData) ? complaintsData : []);
         const list = document.getElementById('dept-complaints');
 
-        if (!complaints || complaints.length === 0) {
+        if (!complaints || complaints.length === 0 || !Array.isArray(complaints)) {
             list.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 2rem; color: var(--text-muted);">No complaints forwarded to your department.</td></tr>';
         } else {
             list.innerHTML = '';
@@ -132,17 +133,7 @@
                 list.appendChild(tr);
 
                 if (c.image) {
-    const imgCell = document.getElementById(`img-cell-dept-${c.id}`);
-    imgCell.innerHTML = `
-        <a href="${c.image}" target="_blank">
-            <img src="${c.image}" style="width:60px; border-radius:6px;" />
-        </a>
-    `;
-} else {
-    const imgCell = document.getElementById(`img-cell-dept-${c.id}`);
-    imgCell.innerHTML = '-';
-}
-                    });
+                    loadAuthImage(c.image, `img-cell-dept-${c.id}`, 'width: 60px; height: 60px; object-fit: cover; border-radius: 6px;');
                 }
             });
         }
